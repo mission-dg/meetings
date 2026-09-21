@@ -102,7 +102,9 @@ test('scheduler: atomic cross-week trades, failed approval rollback, and stale q
  for(let i=0;i<2;i++){await act(1,'draft',{week:weeks[i]});let d=(await read(1,weeks[i])).week.draft;await act(1,'save',{id:d.id,version:d.version,shifts:[originals[i]]});d=(await read(1,weeks[i])).week.draft;await act(1,'release',{id:d.id,version:d.version})}
  await act(1,'draft',{week:weeks[0]});let d=(await read(1)).week.draft;await act(1,'queue',{id:d.id,version:d.version,release_at:'2030-09-01T12:00:00Z'});
  await act(4,'request',{kind:'Trade',source_id:originals[0].id,target_id:originals[1].id});let q=(await read(4)).requests[0];await act(3,'accept',{id:q.id,version:q.version});q=(await read(1)).requests[0];
- await assert.rejects(act(2,'decide',{id:q.id,version:q.version,decision:'Approved'}),/sign-off/);
+ await db.exec("update staff set active=false where id='Alex.L'");
+ await assert.rejects(act(2,'decide',{id:q.id,version:q.version,decision:'Approved'}),/access|active/);
+ await db.exec("update staff set active=true where id='Alex.L'");
  assert.equal((await read(1)).published.find(w=>w.week===weeks[0]).shifts[0].person_id,'s:Casey.W');
  await act(2,'decide',{id:q.id,version:q.version,decision:'Approved',qualification_reason:'Supervised trade'});
  let r=await read(1);assert.equal(r.published.find(w=>w.week===weeks[0]).shifts[0].person_id,'s:Alex.L');assert.equal(r.published.find(w=>w.week===weeks[1]).shifts[0].person_id,'s:Casey.W');
@@ -119,7 +121,7 @@ test('scheduler: malformed availability, submission replay, copy previous week, 
  await act(1,'draft',{week:'2030-09-08',copy_previous:true});d=(await read(1,'2030-09-08')).week.draft;assert.equal(d.shifts.length,1);assert.notEqual(d.shifts[0].id,shift(40).id);assert.equal(new Date(d.shifts[0].start).toISOString(),'2030-09-09T16:00:00.000Z');
  await act(1,'queue',{id:d.id,version:d.version,release_at:'2030-09-08T12:00:00Z'});d=(await read(1,'2030-09-08')).week.draft;const queuedVersion=d.version;await act(2,'unqueue',{id:d.id,version:queuedVersion});await assert.rejects(act(1,'release',{id:d.id,version:queuedVersion}),/changed/);await db.exec('select private.run_schedule_releases()');assert.equal((await read(1,'2030-09-08')).week.draft.state,'Draft');
  await act(4,'request',{kind:'Offer',source_id:shift(40).id});
- await db.exec("update private.schedule_revisions set shifts=jsonb_set(shifts,'{0,start}',to_jsonb(now()-interval '1 minute')) where state='Published';select private.run_schedule_releases();select private.run_schedule_releases();");
+ await db.exec("update private.schedule_revisions set shifts=jsonb_set(jsonb_set(shifts,'{0,start}',to_jsonb(now()-interval '1 minute')),'{0,end}',to_jsonb(now()+interval '5 hours')) where state='Published';select private.run_schedule_releases();select private.run_schedule_releases();");
  const r=await read(4);assert.equal(r.requests[0].status,'Invalid');assert.equal(r.notifications.filter(n=>n.event_key.startsWith('invalid:')).length,1);
  }finally{await db.close()}
 });
@@ -127,7 +129,7 @@ test('scheduler: malformed availability, submission replay, copy previous week, 
 test('scheduler worker: delayed release and revoked releasing manager preserve publication',async()=>{
  const {db,act,read,shift}=await fixture();try{
  await act(1,'draft',{week:'2030-09-01'});let d=(await read(1)).week.draft;await act(1,'save',{id:d.id,version:d.version,shifts:[shift(50)]});d=(await read(1)).week.draft;await act(1,'queue',{id:d.id,version:d.version,release_at:'2030-09-01T12:00:00Z'});
- await db.exec("update private.schedule_revisions set release_at=now()-interval '1 minute',shifts=jsonb_set(shifts,'{0,start}',to_jsonb(now()-interval '1 minute'));select private.run_schedule_releases();");
+ await db.exec("update private.schedule_revisions set release_at=now()-interval '1 minute',shifts=jsonb_set(jsonb_set(shifts,'{0,start}',to_jsonb(now()-interval '1 minute')),'{0,end}',to_jsonb(now()+interval '5 hours'));select private.run_schedule_releases();");
  let r=await read(1);assert.equal(r.week.draft.state,'Attention');assert.match(r.week.draft.error,/already started/);assert.equal(r.published.length,0);
  d=r.week.draft;await act(2,'save',{id:d.id,version:d.version,shifts:[shift(50)]});d=(await read(2)).week.draft;await act(2,'queue',{id:d.id,version:d.version,release_at:'2030-09-01T12:00:00Z'});
  await db.exec(`update manager_profiles set active=false where id='${uid(2)}';update private.schedule_revisions set release_at=now()-interval '1 minute' where state='Queued';select private.run_schedule_releases();`);

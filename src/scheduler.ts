@@ -19,3 +19,29 @@ export function centralInstant(local:string,occurrence=''){const candidates=loca
 export function clockTime(iso:string){return new Intl.DateTimeFormat('en-US',{timeZone:zone,hour:'numeric',minute:'2-digit'}).format(new Date(iso))}
 export function hours(shifts:WorkShift[]){return Math.round(shifts.reduce((n,s)=>n+(Date.parse(s.end)-Date.parse(s.start))/3600000,0)*100)/100}
 export function scheduleChanges(before:WorkShift[],after:WorkShift[]){return {added:after.filter(s=>!before.some(p=>p.id===s.id)),changed:after.filter(s=>before.some(p=>p.id===s.id&&['person_id','start','end','slot','job_id','qualification_reason'].some(k=>p[k as keyof WorkShift]!==s[k as keyof WorkShift]))),removed:before.filter(s=>!after.some(p=>p.id===s.id))}}
+
+// A trainer must be assigned to this job and cover the work interval. Merely
+// having a trainer elsewhere on the roster must not hide the reminder.
+export function qualificationWarnings(data:SchedulerData,shifts:WorkShift[]){
+ const published=data.published.flatMap(w=>w.shifts);
+ const currentIds=new Set(shifts.map(s=>s.id));
+ const available=[...shifts,...published.filter(s=>!currentIds.has(s.id)&&shiftDay(s.start)<data.week.start),...published.filter(s=>!currentIds.has(s.id)&&shiftDay(s.start)>=addDays(data.week.start,7))];
+ return shifts.flatMap(s=>{
+  const person=data.people.find(p=>p.id===s.person_id);
+  if(!s.job_id||!person?.staff_id||data.signoffs.some(f=>f.staff_id===person.staff_id&&f.training_position_id===s.job_id&&f.active))return [];
+  const intervals=data.training.filter(t=>t.status==='Scheduled'&&t.work_shift_id===s.id&&t.staff_id===person.staff_id&&t.training_position_id===s.job_id&&t.ends_at&&(!t.schedule_revision_id||t.schedule_revision_id===data.week.draft?.id||data.published.some(w=>w.revision_id===t.schedule_revision_id))).flatMap(t=>{
+   const trainer=available.find(x=>x.id===t.trainer_shift_id&&x.person_id==='s:'+t.trainer_id);
+   const eligible=data.people.some(p=>p.staff_id===t.trainer_id&&p.active&&p.is_trainer);
+   return trainer&&eligible&&Date.parse(trainer.start)<=Date.parse(t.scheduled_at)&&Date.parse(trainer.end)>=Date.parse(t.ends_at!)?[[Date.parse(t.scheduled_at),Date.parse(t.ends_at!)]]:[];
+  }).sort((a,b)=>a[0]-b[0]);
+  let covered=Date.parse(s.start);for(const [start,end] of intervals){if(start>covered)break;covered=Math.max(covered,end)}
+  return covered>=Date.parse(s.end)?[]:[`${person.name} · ${data.jobs.find(j=>j.id===s.job_id)?.name||'Assigned job'} · ${shiftDay(s.start)} ${clockTime(s.start)}: not signed off and scheduled without a trainer for all or part of this shift.`];
+ });
+}
+
+export function validateWorkShiftTimes(start:string,end:string){
+ const duration=Date.parse(end)-Date.parse(start);
+ if(!Number.isFinite(duration))throw new Error('Choose valid start and end times.');
+ if(duration<=0)throw new Error('End time must be after start time. For an overnight shift, choose the following date.');
+ if(duration>12*60*60*1000)throw new Error('A shift cannot exceed 12 hours.');
+}
