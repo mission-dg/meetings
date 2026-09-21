@@ -137,3 +137,15 @@ If you are signed out everywhere and never set a password, wait until the email 
 Validation: production build, existing permission tests, and browser checks of password/default and recovery navigation passed. A real account password setup and subsequent login require the account owner to enter their password; this has not been performed by the agent.
 
 Training can now be created from the standard meeting form. Selecting Training replaces the manager field with a required active Trainer selector and a Shift selector. The save uses the existing training-session store, so training does not count as a six-month meeting. Existing meetings and GM-linked bookings keep their original record type. No new database migration is needed. Browser checks verified missing-trainer blocking, Routine/Training switching, and a valid preview submission.
+
+## Training progress and manager sign-off
+
+Migration `006_training_progress.sql` was installed in the connected Supabase project on September 21, 2026. It adds six requested jobs (FOH: GSR, EXPO, DRL; HOH: Line, Prep; Catering: Catering), each with a default target of four shifts. Existing sessions remain untouched with no job assigned until their creator chooses one. New training sessions require an active training job. Publish this frontend promptly after migration so the scheduling form includes that required field.
+
+Use **Training progress** to see each employee/job pair, completed shifts, remaining shifts, scheduled bookings, and history showing trainers. Only explicit Completed sessions count. The same employee/job/local-date/shift counts once even if it has multiple sessions. Future sessions cannot be marked completed. Targets use Shift 1/2 and Central dates, without fixed shift start times.
+
+At the target, the status is **Ready for sign-off**. Any active manager may confirm readiness; the status becomes **Fully trained** and retains the manager and timestamp. The sign-off creator can reopen it. All managers can read progress; existing creator-only editing applies to sessions and confirmations. The IT Admin can add, rename, archive jobs, or adjust their targets (1–30 shifts). No permanent deletion is offered. If a changed target/history leaves fewer completed shifts than the target, the display shows In training with the earlier sign-off retained as history.
+
+Older sessions appear under **Training needs a job**. Their creator can use **Choose / correct training job** in session details without changing the time or outcome. Completed legacy sessions count after assignment. Training job membership is independent of the employee’s home position group, allowing cross-training. Training never resets meeting reminders or resolves GM requests.
+
+Verification: eight test groups pass, including actual SQL migration/policy/target/stale-update checks, preserving legacy records, job seeding, duplicate-shift counting, and date/timezone cases. Browser checks verified 2/4 progress, 4/4 Ready for sign-off, the job catalog, and prefilled next-shift scheduling. No live employee qualification was signed off during validation.
