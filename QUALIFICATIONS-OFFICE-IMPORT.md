@@ -24,3 +24,9 @@ Primary Role and Other Roles become earned qualifications; training sessions are
 5. Before a real migration, review a small batch and its matches/rates with the owner. The test suite exercises actual import transactions in an isolated database.
 
 No classification or qualification is inferred for existing employees. A rollback after live activity needs reconciliation; do not restore the snapshot wholesale over newer records. Keep migrations and backup as the recovery reference and prefer a corrective forward migration.
+
+## Day-based schedule
+
+The weekly schedule shows scheduled assignments under each day, grouped by Lunch/Dinner and assigned job group. Starts at 2 PM or later are Dinner; earlier starts are Dinner only when more than half the shift is after 4 PM Central. Ties stay Lunch. Each shift appears once in its starting day. Hourly office blocks also appear in Management & office without doubling totals. Approved absences remain manager-only.
+
+Validation: 57 automated tests and production build passed. Desktop grouping and phone single-column layout checked in the disconnected preview. Publication remains coupled to migrations 021/022; this display update itself needs no migration.
