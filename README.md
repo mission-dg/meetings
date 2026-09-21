@@ -159,3 +159,16 @@ IT Admins can use **Staff directory → Remove**. The confirmation window requir
 IT Admins and the active GM can use **IT Admin → SHL accounts → Grant / Remove IT access**. A review panel identifies the account and intended change. The new server function changes only IT membership, preserving manager/GM roles and active state. Ordinary or inactive managers cannot call it. It checks profile versions, serializes competing role changes, preserves at least one active IT Admin, and records changes in the existing audit history. Self-demotion is allowed when another active IT Admin remains; a GM may promote themselves for testing. Invitations, roster editing, and general account editing remain IT-only. No actual account was promoted or demoted during validation.
 
 Validation: nine test groups pass, including typed-name mismatch/rename cases, history preservation, unauthorized callers, GM promotions/demotions, self-demotion, stale changes, inactive targets, and last-admin protection. Browser checks confirmed both phrases are required exactly and the role-change review panel names its target.
+
+
+## Primary jobs and additional qualifications
+
+Migration `008_primary_jobs.sql` was installed successfully in the connected Supabase project on September 21, 2026. It adds an optional primary job to each employee without changing existing IDs, bookings, or training history. Existing employees start with no primary job assigned. IT Admins choose it in **Staff directory → Edit → Primary job**; the job must be active and in the employee’s FOH, HOH, or Catering group. The directory shows and filters by primary job, and the scheduling form offers the same lookup filter.
+
+The primary job is independent of qualifications. Employees can train in any number of other jobs, including jobs in another position group. Each employee/job pair retains its own completed-shift count, target, and manager sign-off. Select the job being learned when scheduling each training session. **Training progress** labels each row as Primary job or Additional job, and the directory shows additional-job progress. Changing a primary job or transferring groups preserves every training session and sign-off. Assigning a primary job does not mark someone fully trained.
+
+An archived primary job stays attached until deliberately reassigned, but cannot be newly assigned. Before changing the position group of a job used as someone’s primary job, reassign those employees. General staff editing remains IT-only, and meeting/training creator permissions remain unchanged.
+
+Validation: ten test groups pass, including an employee completing and receiving sign-off in all six jobs; primary-job changes and transfers preserve all 24 sessions and six qualifications. Server checks reject mismatched groups, archived new assignments, and unauthorized edits.
+
+Browser checks verified primary-job filtering, group-specific choices, cleared incompatible selections, and scheduling a secondary Line session for an employee whose primary job remains GSR. Unchanged forms close without a warning. The production build passes.

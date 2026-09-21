@@ -1,6 +1,6 @@
 import type {TrainingPosition,TrainingSignoff} from './trainingProgress';
 export type Profile={id:string;name:string;active:boolean;is_gm:boolean;is_admin:boolean;version:number};
-export type Employee={id:string;first_name:string;last_name:string;department:'FOH'|'BOH'|'Catering';active:boolean;priority:boolean;is_trainer?:boolean};
+export type Employee={id:string;first_name:string;last_name:string;department:'FOH'|'BOH'|'Catering';active:boolean;priority:boolean;is_trainer?:boolean;primary_job_id?:string|null};
 export type Meeting={id:string;staff_id:string;manager_id:string;created_by:string;type:'Routine'|'Special';scheduled_at:string;status:'Scheduled'|'Completed'|'Cancelled'|'Missed';completed_on:string|null;version:number};
 export type Note={id:string;meeting_id:string;body:string;created_by:string;updated_at:string;version:number};
 export type Request={id:string;staff_id:string;created_by:string;requested_on:string;status:'Open'|'Resolved'|'Withdrawn';meeting_id:string|null;version:number};
@@ -14,3 +14,5 @@ export function labels(p:Employee,d:Data,day=today()){const last=d.meetings.filt
 export function displayTime(value:string){return new Intl.DateTimeFormat('en-US',{timeZone:zone,month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}).format(new Date(value))}
 
 export const positionName=(value?:string)=>value==='BOH'?'HOH':value||'';
+
+export const primaryJobName=(employee:Employee,positions:TrainingPosition[])=>positions.find(p=>p.id===employee.primary_job_id)?.name||'Primary job not assigned';
