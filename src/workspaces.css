@@ -11,3 +11,5 @@
 .account-permission-row>select{width:100%;min-width:0}
 .account-permission-row>button{white-space:nowrap}
 @media(max-width:700px){.account-permission-row{grid-template-columns:minmax(0,1fr);gap:12px}.account-permission-row>button{justify-self:start}}
+
+nav button .nav-page-indicator{margin-left:auto;flex-shrink:0;opacity:.85}

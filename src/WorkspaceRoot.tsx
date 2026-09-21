@@ -1,7 +1,7 @@
 import {type UsernameStatus} from './username';
 import {useCallback,useEffect,useRef,useState,type ReactNode} from 'react';
 import type {Session} from '@supabase/supabase-js';
-import {CalendarDays,Users,MessageSquare,BookOpen,LogOut,RefreshCw,ShieldCheck,ClipboardList,ArrowLeft,Clock} from 'lucide-react';
+import {CalendarDays,Users,MessageSquare,BookOpen,LogOut,RefreshCw,ShieldCheck,ClipboardList,ArrowLeft,ArrowUpRight,Clock} from 'lucide-react';
 import {supabase,configured} from './client';
 import {LoginForm,PasswordForm} from './AuthForms';
 import {ScheduleBoard} from './ScheduleBoard';
@@ -90,7 +90,7 @@ export function WorkspaceRoot({legacy}:{legacy:(back:(view?:string)=>void,author
  if(old&&workspace!=='employee')return legacy(()=>{setView('home');setOld(false);void load().catch(()=>{})},Object.fromEntries(data.accounts.map(a=>[a.id,data.people.find(p=>p.staff_id===a.staff_id)?.name||'Former teammate'])));
  const pages=workspacePages[workspace],pageTitle=[...pages,...employeeMore].find(([id])=>id===view)?.[1]||'Home';
  const unread=data.announcements.filter(a=>a.active&&!a.read).length+data.notifications.filter(n=>!n.read_at).length;
- const navigation=pages.map(([id,title])=><button key={id} className={view===id?'selected':''} aria-current={view===id?'page':undefined} onClick={()=>navigate(id)}>{title}{id==='announcements'&&unread>0&&<span className="nav-count">{unread}</span>}</button>);
+ const navigation=pages.map(([id,title])=><button key={id} className={view===id?'selected':''} aria-current={view===id?'page':undefined} title={id==='meetings'?'Open the Meetings & staff page':undefined} onClick={()=>navigate(id)}>{title}{id==='meetings'&&<ArrowUpRight className="nav-page-indicator" size={16} aria-hidden="true"/>}{id==='announcements'&&unread>0&&<span className="nav-count">{unread}</span>}</button>);
  const switcher=<label className="workspace-switcher"><span>Workspace</span><select aria-label="Workspace view" value={workspace} disabled={busy} onChange={e=>switchWorkspace(e.target.value as Workspace)}>{access.views.map(v=><option value={v} key={v}>{workspaceLabels[v]}</option>)}</select></label>;
  return <div className={'shell scheduler-shell workspace-'+workspace}>
  {workspace!=='employee'&&<aside><div className="brand"><span className="brand-icon">M</span><span>MISSION BBQ<small>{workspace==='it'?'SYSTEM ADMINISTRATION':'MANAGER WORKSPACE'}</small></span></div>{switcher}<nav aria-label={workspaceLabels[workspace]+' navigation'}>{navigation}</nav><div className="sidebar-bottom"><p>{access.name}</p><button onClick={()=>{if(canLeave())setPassword(true)}}>Change password</button><button onClick={()=>{if(canLeave())void signOut()}}>Sign out</button></div></aside>}
