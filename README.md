@@ -6,9 +6,11 @@ Private manager workspace. React + TypeScript + Vite frontend; Supabase Auth and
 
 ## Current status
 
-Supabase project `jgekdmnfakagmuudywmb` is configured: migrations 001–003 are installed, the account service is deployed, public registration is disabled, and GitHub has the public connection variables. The initial IT Admin is active; the GM has not yet been assigned. The owner confirmed successful invitation sign-in to the live Meeting Tracker overview. Other authenticated editing workflows still need live verification; custom SMTP is not configured yet. A development-only visual preview contains fictional examples and disables saving; it is not included as a usable route in production.
+Migrations 001–008 are installed in the connected project. Scheduler release 0.2 is built and tested locally; its live installation and employee rollout are tracked in [SCHEDULER-SETUP.md](SCHEDULER-SETUP.md). Follow that checklist before publishing this frontend. Employee invitations remain disabled until a verified sender and successful invitation/reset delivery are recorded.
 
-Implemented: dashboard, staff directory, scheduling/rescheduling, completed/missed/cancelled outcomes, shared notes, creator-only editing, GM requests and links, six-month labels, database audit history, permanent staff IDs, IT Admin account management, employee CSV imports, and MISSION BBQ-inspired styling. This is a new empty project; no spreadsheet records have been imported. Full historical-entry/correction screens and Calendar integration are follow-up work.
+The scheduler adds weekly private drafts, queued server releases, employee/CA views, requests and shift trades, linked training, and in-app announcements. Meetings & staff keeps the existing manager tools and six-month rules. The development preview uses fictional data and in-memory draft demonstrations; it does not change live records or send email. Preview access is disabled in production.
+
+The sections below document the original tracker and its incremental migrations. Scheduler 009 replaces the earlier standalone-training creation rules: new training requires work-shift links and an end time, and work times may extend outside customer opening hours. Earlier standalone records remain intact.
 
 ## 1. Create Supabase
 
