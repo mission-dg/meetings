@@ -149,3 +149,13 @@ At the target, the status is **Ready for sign-off**. Any active manager may conf
 Older sessions appear under **Training needs a job**. Their creator can use **Choose / correct training job** in session details without changing the time or outcome. Completed legacy sessions count after assignment. Training job membership is independent of the employee’s home position group, allowing cross-training. Training never resets meeting reminders or resolves GM requests.
 
 Verification: eight test groups pass, including actual SQL migration/policy/target/stale-update checks, preserving legacy records, job seeding, duplicate-shift counting, and date/timezone cases. Browser checks verified 2/4 progress, 4/4 Ready for sign-off, the job catalog, and prefilled next-shift scheduling. No live employee qualification was signed off during validation.
+
+## Employee removal and IT role testing
+
+Migration `007_staff_removal_it_roles.sql` adds typed employee removal and IT-role changes. Installation is pending approval because it expands the GM's ability to grant IT privileges. Install before publishing this frontend.
+
+IT Admins can use **Staff directory → Remove**. The confirmation window requires exactly `Remove FirstName LastName` and then `Confirm`, including capitalization and spacing. The server checks the phrases against the current stored name. Removal sets Active to false; IDs, meeting/training/request history, notes, and open bookings remain. The window lists open meetings and training involving the employee (including trainer assignments). To restore them, choose Staff directory → All → Edit → Active employee. Active staff must use the removal window instead of an unchecked Active field.
+
+IT Admins and the active GM can use **IT Admin → SHL accounts → Grant / Remove IT access**. A review panel identifies the account and intended change. The new server function changes only IT membership, preserving manager/GM roles and active state. Ordinary or inactive managers cannot call it. It checks profile versions, serializes competing role changes, preserves at least one active IT Admin, and records changes in the existing audit history. Self-demotion is allowed when another active IT Admin remains; a GM may promote themselves for testing. Invitations, roster editing, and general account editing remain IT-only. No actual account was promoted or demoted during validation.
+
+Validation: nine test groups pass, including typed-name mismatch/rename cases, history preservation, unauthorized callers, GM promotions/demotions, self-demotion, stale changes, inactive targets, and last-admin protection. Browser checks confirmed both phrases are required exactly and the role-change review panel names its target.
