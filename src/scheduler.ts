@@ -38,3 +38,10 @@ export function qualificationWarnings(data:SchedulerData,shifts:WorkShift[]){
   return covered>=Date.parse(s.end)?[]:[`${person.name} · ${data.jobs.find(j=>j.id===s.job_id)?.name||'Assigned job'} · ${shiftDay(s.start)} ${clockTime(s.start)}: not signed off and scheduled without a trainer for all or part of this shift.`];
  });
 }
+
+export function validateWorkShiftTimes(start:string,end:string){
+ const duration=Date.parse(end)-Date.parse(start);
+ if(!Number.isFinite(duration))throw new Error('Choose valid start and end times.');
+ if(duration<=0)throw new Error('End time must be after start time. For an overnight shift, choose the following date.');
+ if(duration>12*60*60*1000)throw new Error('A shift cannot exceed 12 hours.');
+}
