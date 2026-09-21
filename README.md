@@ -109,3 +109,15 @@ Visual reference: [MISSION BBQ official website](https://mission-bbq.com/) — c
 Auth reference: [Supabase implicit flow](https://supabase.com/docs/guides/auth/sessions/implicit-flow). Account invitation API: [inviteUserByEmail](https://supabase.com/docs/reference/javascript/auth-admin-inviteuserbyemail).
 
 Local tests cover real SQL access policies, creator-only notes and meetings, admin-only operations, stale role changes, GM transfer, import rollback/retries, Staff ID collisions, and malformed CSV. The Edge Function handler is tested with mocked Auth responses; actual email delivery and live Supabase login still require the project and SMTP configuration. After connection, exercise invitation → email → login, inactive-account rejection, two-manager shared viewing/creator-only editing, and a small employee import before loading a real roster.
+
+## Trainers and training sessions
+
+Install `supabase/migrations/004_training.sql` after migration 003 before publishing this frontend. The migration was installed successfully in the connected project on September 21, 2026. It preserves existing records.
+
+1. IT Admin: open Staff directory → Edit, select **Trainer**, and save. Trainers remain employees without website accounts.
+2. Managers: open Meetings → **Schedule training**. Choose FOH/BOH, employee, trainer, Shift 1 or Shift 2, date, and Central start time. One trainer belongs to each session; the same employee can have different trainers on later shifts or days.
+3. Teal calendar entries show **start time · Trainer Training Employee**, plus shift. Click one to view details. Its creator can reschedule, complete, mark missed, or cancel it. All active managers can view it.
+
+Shift numbers do not imply fixed times. Starts must be within Sunday 11:30 AM–8 PM or Monday–Saturday 11 AM–9 PM (closing time excluded). No end time or overlap checking is implied. Training never resets six-month meeting eligibility, clears manual priority, or resolves GM requests. Existing sessions remain in history if a trainer is deactivated or loses their designation.
+
+Validation: SQL tests cover opening hours, multiple trainers over days, staff eligibility, shift values, shared reads, creator-only edits, stale updates, audit history, anonymous denial, and unchanged meeting reminders. Preview checks cover department-first selection, shift selection, validation, and calendar display.
