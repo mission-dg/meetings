@@ -19,12 +19,12 @@ In the SQL Editor, run `supabase/migrations/001_tracker.sql`, then `supabase/mig
 Authentication settings:
 
 - Turn **Allow new users to sign up** off.
-- Enable Email authentication and magic-link sign-in.
+- Enable Email authentication (password sign-in, invitation links, and password recovery).
 - Set Site URL to `https://mission-dg.github.io/meetings/`.
 - Add exactly that URL to allowed redirect URLs. For local development, also allow `http://localhost:5173/` and `http://127.0.0.1:5173/`.
 - Configure production email delivery before inviting your manager team. Supabase's built-in test email delivery has recipient/rate restrictions.
 
-The site requests sign-in links with `shouldCreateUser: false`; disabling signups on the server is also required. Managers do not enter passwords on the GitHub Pages website.
+The site requests sign-in links with `shouldCreateUser: false`; disabling signups on the server is also required. Password sign-in is the default; passwords are sent directly to Supabase Auth and are never stored in app records. Email links remain optional.
 
 ## 2. Approve your first IT Admin and GM
 
@@ -40,7 +40,7 @@ commit;
 
 If you personally hold both roles, create just one row with both booleans true. Roles remain independent: IT Admin does not grant the GM’s special-meeting authority, and neither role overrides creator-only editing. You may create only the IT Admin first with `is_gm=false`. Migration 003 allows the GM to remain unassigned during initial setup. After the first active GM is assigned, a replacement is required before removing that designation.
 
-After bootstrap, use **IT Admin → Manager accounts** for invitations, new sign-in links, names, activation, IT Admin access, and GM reassignment. Another IT Admin must remove your own administrator access. Assign a replacement before deactivating the current GM. Open linked GM bookings must be resolved or cancelled before transferring the designation.
+After bootstrap, use **IT Admin → SHL accounts** for invitations, new sign-in links, names, activation, IT Admin access, and GM reassignment. Another IT Admin must remove your own administrator access. Assign a replacement before deactivating the current GM. Open linked GM bookings must be resolved or cancelled before transferring the designation.
 
 ### Install the account service
 
@@ -127,3 +127,11 @@ Validation: SQL tests cover opening hours, multiple trainers over days, staff el
 Migration 005 adds Catering without changing existing IDs or records. User-facing positions are FOH, HOH, Catering, and SHL (managers). The existing database field `department` and stored `BOH` value remain compatible; BOH displays as HOH. CSVs accept Position/Department headers and HOH/BOH values. SHLs appear in the staff directory and are managed through SHL accounts, preserving login permissions and their exemption from employee meeting reminders.
 
 Migration 005 was installed in the connected Supabase project on September 21, 2026. All six test groups and the production build passed. The website change must still be pushed to GitHub to publish.
+
+## Password sign-in
+
+The sign-in page defaults to email and password. Existing invited accounts can use their signed-in session and **Set / change password** in the sidebar. New invitations and recovery links open the password setup screen. Choose and confirm a password of at least 12 characters. Recovery remains available through **Forgot password?**; this sends email and shares the email sending quota. Password sign-in does not send email. Public registration remains disabled and all existing manager access checks remain in place.
+
+If you are signed out everywhere and never set a password, wait until the email quota resets, request one sign-in link, then set a password. A previously consumed link cannot be reused. Publish the frontend update before requesting a recovery link. Custom SMTP remains necessary for reliable invitations and recovery emails; this change does not increase the email quota. Browser sessions already persist and refresh automatically; sign out when finished on a shared computer.
+
+Validation: production build, existing permission tests, and browser checks of password/default and recovery navigation passed. A real account password setup and subsequent login require the account owner to enter their password; this has not been performed by the agent.
