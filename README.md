@@ -115,7 +115,7 @@ Local tests cover real SQL access policies, creator-only notes and meetings, adm
 Install `supabase/migrations/004_training.sql` after migration 003 before publishing this frontend. The migration was installed successfully in the connected project on September 21, 2026. It preserves existing records.
 
 1. IT Admin: open Staff directory → Edit, select **Trainer**, and save. Trainers remain employees without website accounts.
-2. Managers: open Meetings → **Schedule training**. Choose FOH, HOH, or Catering, employee, trainer, Shift 1 or Shift 2, date, and Central start time. One trainer belongs to each session; the same employee can have different trainers on later shifts or days.
+2. Managers: open **Schedule meeting → Meeting type → Training** (or Meetings → **Schedule training**). Choose FOH, HOH, or Catering, employee, trainer, Shift 1 or Shift 2, date, and Central start time. One trainer belongs to each session; the same employee can have different trainers on later shifts or days.
 3. Teal calendar entries show **start time · Trainer Training Employee**, plus shift. Click one to view details. Its creator can reschedule, complete, mark missed, or cancel it. All active managers can view it.
 
 Shift numbers do not imply fixed times. Starts must be within Sunday 11:30 AM–8 PM or Monday–Saturday 11 AM–9 PM (closing time excluded). No end time or overlap checking is implied. Training never resets six-month meeting eligibility, clears manual priority, or resolves GM requests. Existing sessions remain in history if a trainer is deactivated or loses their designation.
@@ -135,3 +135,5 @@ The sign-in page defaults to email and password. Existing invited accounts can u
 If you are signed out everywhere and never set a password, wait until the email quota resets, request one sign-in link, then set a password. A previously consumed link cannot be reused. Publish the frontend update before requesting a recovery link. Custom SMTP remains necessary for reliable invitations and recovery emails; this change does not increase the email quota. Browser sessions already persist and refresh automatically; sign out when finished on a shared computer.
 
 Validation: production build, existing permission tests, and browser checks of password/default and recovery navigation passed. A real account password setup and subsequent login require the account owner to enter their password; this has not been performed by the agent.
+
+Training can now be created from the standard meeting form. Selecting Training replaces the manager field with a required active Trainer selector and a Shift selector. The save uses the existing training-session store, so training does not count as a six-month meeting. Existing meetings and GM-linked bookings keep their original record type. No new database migration is needed. Browser checks verified missing-trainer blocking, Routine/Training switching, and a valid preview submission.
