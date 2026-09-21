@@ -1,0 +1,41 @@
+import {PGlite} from '@electric-sql/pglite';
+import {readFile} from 'node:fs/promises';
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+test('real SQL: shared reads, creator-only edits, active accounts, GM restriction, notes and history',async()=>{
+ const db=new PGlite();
+ await db.exec(`create role anon;create role authenticated;create schema auth;create table auth.users(id uuid primary key);create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema auth to authenticated;grant execute on function auth.uid() to authenticated;`);
+ await db.exec(await readFile(new URL('../supabase/migrations/001_tracker.sql',import.meta.url),'utf8'));
+ const a='00000000-0000-0000-0000-000000000001',b='00000000-0000-0000-0000-000000000002',c='00000000-0000-0000-0000-000000000003';
+ await db.exec(`insert into auth.users values('${a}'),('${b}'),('${c}');insert into manager_profiles values('${a}','Creator',true,true,true),('${b}','Other manager',true,false,false),('${c}','Inactive',false,false,false);`);
+ async function as(id,sql){await db.exec(`set role authenticated;set request.jwt.claim.sub='${id}';`);try{return await db.query(sql)}finally{await db.exec('reset role')}}
+ const staff=(await as(a,`insert into staff(first_name,last_name,department) values('Isaac','Linder','FOH') returning *`)).rows[0];assert.equal(staff.id,'Isaac.L');
+ const second=(await as(a,`insert into staff(first_name,last_name,department) values('isaac','Linder','BOH') returning *`)).rows[0];assert.equal(second.id,'isaac.Li');
+ const m=(await as(a,`insert into meetings(staff_id,manager_id,type,scheduled_at) values('Isaac.L','${a}','Routine',now()+interval '2 days') returning *`)).rows[0];
+ assert.equal((await as(b,'select * from meetings')).rows.length,1);
+ assert.equal((await as(b,`update meetings set status='Missed' where id='${m.id}' returning *`)).rows.length,0);
+ assert.equal((await as(c,'select * from meetings')).rows.length,0);
+ assert.equal((await as('00000000-0000-0000-0000-000000000099','select * from meetings')).rows.length,0);
+ await assert.rejects(as(b,`insert into meetings(staff_id,manager_id,created_by,type,scheduled_at) values('isaac.Li','${b}','${a}','Routine',now()+interval '3 days')`));
+ await assert.rejects(as(b,`insert into meetings(staff_id,manager_id,type,scheduled_at) values('isaac.Li','${b}','Special',now()+interval '3 days')`),/GM/);
+ await assert.rejects(as(a,`insert into meetings(staff_id,manager_id,type,scheduled_at) values('Isaac.L','${a}','Routine',now()+interval '3 days')`),/unique/);
+ const note=(await as(b,`insert into meeting_notes(meeting_id,body) values('${m.id}','Shared note') returning *`)).rows[0];
+ assert.equal((await as(a,'select * from meeting_notes')).rows.length,1);
+ assert.equal((await as(a,`update meeting_notes set body='Admin override' where id='${note.id}' returning *`)).rows.length,0);
+ await as(b,`update meeting_notes set body='Creator correction' where id='${note.id}' and version=1`);
+ assert.equal((await as(b,`update meeting_notes set body='Stale correction' where id='${note.id}' and version=1 returning *`)).rows.length,0);
+ await assert.rejects(as(b,`update meeting_notes set created_by='${a}' where id='${note.id}'`));
+ await as(a,`update meetings set status='Completed',completed_on=(now() at time zone 'America/Chicago')::date where id='${m.id}'`);
+ assert.ok((await as(b,'select * from change_history')).rows.length>=5);
+ await assert.rejects(as(b,'delete from meeting_notes'));
+ await db.exec('set role anon');await assert.rejects(db.query('select * from meetings'));await db.exec('reset role');
+ 
+ const request=(await as(b,`insert into gm_requests(staff_id) values('isaac.Li') returning *`)).rows[0];
+ const linked=(await as(a,`select * from schedule_meeting('isaac.Li','${a}','Special',now()+interval '4 days','${request.id}')`)).rows[0];
+ assert.equal((await as(b,`select * from gm_requests where id='${request.id}'`)).rows[0].meeting_id,linked.id);
+ await assert.rejects(as(a,`update gm_requests set status='Withdrawn' where id='${request.id}'`),/creator/);
+ await as(a,`update meetings set status='Completed',completed_on=(now() at time zone 'America/Chicago')::date where id='${linked.id}'`);
+ assert.equal((await as(b,`select * from gm_requests where id='${request.id}'`)).rows[0].status,'Resolved');
+ await assert.rejects(db.exec(`update manager_profiles set is_gm=false where id='${a}'`),/Exactly one/);
+ await db.close();
+});
