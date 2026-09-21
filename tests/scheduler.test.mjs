@@ -159,3 +159,41 @@ test('scheduler upgrade: preserves legacy evidence and blocks employee/CA retrie
  await as(1,"update training_sessions set status='Missed' where id=$1",[sid(991)]);assert.equal((await read(4)).training[0].status,'Missed');
  }finally{await db.close()}
 });
+
+test('availability: pending/denied changes preserve approval, future effective dates and manager decisions are enforced',async()=>{
+ const {db,as,act,read,shift}=await fixture();try{
+ const all=()=>Array.from({length:7},()=>[[0,1440]]);
+ const conflict=async(start,end)=>(await db.query("select private.person_conflict('s:Casey.W',$1,$2) reason",[start,end])).rows[0].reason;
+ await act(4,'request',{kind:'Availability',details:{effective:'2030-09-01',days:all()},reason:'Private availability reason'});
+ let q=(await read(4)).requests[0];
+ await assert.rejects(act(4,'decide',{id:q.id,version:q.version,decision:'Approved'}),/Another manager/);
+ await assert.rejects(act(3,'decide',{id:q.id,version:q.version,decision:'Approved'}),/Another manager/);
+ await act(2,'decide',{id:q.id,version:q.version,decision:'Approved',response:'Confirmed'});
+ q=(await read(4)).requests[0];assert.equal(q.decided_name,'Manager');assert.ok(q.decided_at);assert.equal(q.response,'Confirmed');
+ assert.equal((await read(3)).requests.length,0);assert.equal((await read(5)).requests.length,0);
+ const days=all();days[1]=[[660,840],[900,1260]];days[2]=[[660,840],[840,1260]];days[4]=[];
+ await act(4,'request',{kind:'Availability',details:{effective:'2030-09-08',days}});
+ q=(await read(4)).requests.find(r=>r.status==='Pending');
+ assert.equal(await conflict('2030-09-12T16:00:00Z','2030-09-12T18:00:00Z'),null);
+ await act(2,'decide',{id:q.id,version:q.version,decision:'Rejected'});
+ assert.equal(await conflict('2030-09-12T16:00:00Z','2030-09-12T18:00:00Z'),null);
+ await act(4,'request',{kind:'Availability',details:{effective:'2030-09-08',days}});q=(await read(4)).requests.find(r=>r.status==='Pending');
+ await act(2,'decide',{id:q.id,version:q.version,decision:'Approved'});
+ assert.equal(await conflict('2030-09-05T16:00:00Z','2030-09-05T18:00:00Z'),null,'future approval does not change an earlier week');
+ assert.match(await conflict('2030-09-12T16:00:00Z','2030-09-12T18:00:00Z'),/availability/);
+ assert.equal(await conflict('2030-09-09T16:00:00Z','2030-09-09T19:00:00Z'),null);
+ assert.match(await conflict('2030-09-09T18:00:00Z','2030-09-09T21:00:00Z'),/availability/,'a shift cannot cross an unavailable gap');
+ assert.equal(await conflict('2030-09-10T18:00:00Z','2030-09-10T21:00:00Z'),null,'adjacent windows cover a continuous shift');
+ await act(1,'draft',{week:'2030-09-01'});let d=(await read(1)).week.draft;
+ await act(1,'save',{id:d.id,version:d.version,shifts:[shift(71)]});d=(await read(1)).week.draft;await act(1,'release',{id:d.id,version:d.version});
+ const none=all();none[1]=[];
+ await act(4,'request',{kind:'Availability',details:{effective:'2030-09-01',days:none}});q=(await read(4)).requests.find(r=>r.status==='Pending');
+ await assert.rejects(act(2,'decide',{id:q.id,version:q.version,decision:'Approved'}),/Resolve conflicting published/);
+ assert.equal((await read(4)).requests.find(r=>r.id===q.id).status,'Pending');
+ assert.equal((await read(4)).requests.find(r=>r.id===q.id).decided_at,null);
+ await act(4,'withdraw',{id:q.id,version:q.version});assert.equal((await read(4)).requests.find(r=>r.id===q.id).status,'Withdrawn');
+ await act(2,'request',{kind:'Availability',details:{effective:'2030-09-01',days:all()}});q=(await read(2)).requests.find(r=>r.created_by===uid(2));
+ await assert.rejects(act(2,'decide',{id:q.id,version:q.version,decision:'Approved'}),/Another manager/);
+ await act(1,'decide',{id:q.id,version:q.version,decision:'Approved'});assert.equal((await read(2)).requests.find(r=>r.id===q.id).decided_name,'Admin');
+ }finally{await db.close()}
+});

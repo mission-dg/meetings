@@ -5,7 +5,7 @@ alter table public.manager_profiles add column on_roster boolean not null defaul
 create table private.schedule_weeks(id uuid primary key default gen_random_uuid(),week_start date unique not null check(extract(dow from week_start)=0),published_id uuid,draft_id uuid);
 create table private.schedule_revisions(id uuid primary key default gen_random_uuid(),week_id uuid not null references private.schedule_weeks(id),state text not null default 'Draft' check(state in ('Draft','Queued','Published','Attention')),base_id uuid,shifts jsonb not null default '[]',version int not null default 1,release_at timestamptz,release_by uuid references auth.users(id),released_at timestamptz,error text,created_by uuid not null references auth.users(id),created_at timestamptz not null default now());
 alter table private.schedule_weeks add foreign key(published_id) references private.schedule_revisions(id),add foreign key(draft_id) references private.schedule_revisions(id);
-create table private.scheduler_requests(id uuid primary key default gen_random_uuid(),kind text not null check(kind in ('Availability','Time off','Trade','Coverage','Offer')),person_id text not null,created_by uuid not null references auth.users(id),status text not null default 'Pending' check(status in ('Pending','Accepted','Approved','Rejected','Withdrawn','Invalid')),payload jsonb not null,reason text not null default '',response text,version int not null default 1,claimed_by uuid references auth.users(id),decided_by uuid references auth.users(id),created_at timestamptz not null default now());
+create table private.scheduler_requests(id uuid primary key default gen_random_uuid(),kind text not null check(kind in ('Availability','Time off','Trade','Coverage','Offer')),person_id text not null,created_by uuid not null references auth.users(id),status text not null default 'Pending' check(status in ('Pending','Accepted','Approved','Rejected','Withdrawn','Invalid')),payload jsonb not null,reason text not null default '',response text,version int not null default 1,claimed_by uuid references auth.users(id),decided_by uuid references auth.users(id),decided_at timestamptz,created_at timestamptz not null default now());
 create table private.announcements(id uuid primary key default gen_random_uuid(),title text not null,body text not null,groups text[] not null default '{}',active boolean not null default true,version int not null default 1,created_by uuid not null references auth.users(id),created_at timestamptz not null default now(),updated_at timestamptz not null default now());
 create table private.announcement_reads(user_id uuid references auth.users(id),announcement_id uuid references private.announcements(id),version int not null,primary key(user_id,announcement_id));
 create table private.scheduler_notifications(id uuid primary key default gen_random_uuid(),user_id uuid not null references auth.users(id),event_key text not null,body text not null,created_at timestamptz not null default now(),read_at timestamptz,unique(user_id,event_key));
@@ -54,7 +54,8 @@ begin
   if a is not null then
    covered:=false;
    for av_window in select value from jsonb_array_elements(a->'days'->extract(dow from d)::int) loop
-    if (av_window->>0)::int<=lo and (av_window->>1)::int>=hi then covered:=true;end if;
+    if (av_window->>0)::int<=lo and (av_window->>1)::int>lo then lo:=(av_window->>1)::int;end if;
+    if lo>=hi then covered:=true;exit;end if;
    end loop;
    if not covered then return 'Outside approved availability';end if;
   end if;
@@ -222,7 +223,7 @@ begin
  'training',coalesce((select jsonb_agg(to_jsonb(t)) from public.training_sessions t where m or private.training_visible(t.schedule_revision_id) and (ca or t.staff_id=v_staff_id or t.trainer_id=v_staff_id)),'[]'),
  'signoffs',coalesce((select jsonb_agg(to_jsonb(f)) from public.training_signoffs f where m or ca or f.staff_id=v_staff_id),'[]'),
  'appointments',coalesce((select jsonb_agg(jsonb_build_object('id',a.id,'scheduled_at',a.scheduled_at,'status',a.status,'type',a.type,'manager',p.name,'employee',s.first_name||' '||s.last_name)) from public.meetings a join public.manager_profiles p on p.id=a.manager_id join public.staff s on s.id=a.staff_id where a.staff_id=v_staff_id or a.manager_id=auth.uid()),'[]'),
- 'requests',coalesce((select jsonb_agg(case when m or q.created_by=auth.uid() then to_jsonb(q) else to_jsonb(q)-'reason'-'response' end order by q.created_at desc) from private.scheduler_requests q where m or q.created_by=auth.uid() or q.claimed_by=auth.uid() or q.payload->>'recipient'=my_person or q.kind='Offer' and q.status='Pending'),'[]'),
+ 'requests',coalesce((select jsonb_agg(case when m or q.created_by=auth.uid() then to_jsonb(q)||jsonb_build_object('decided_name',case when q.decided_by is not null then private.account_name(q.decided_by) end) else to_jsonb(q)-'reason'-'response' end order by q.created_at desc) from private.scheduler_requests q where m or q.created_by=auth.uid() or q.claimed_by=auth.uid() or q.payload->>'recipient'=my_person or q.kind='Offer' and q.status='Pending'),'[]'),
  'announcements',coalesce((select jsonb_agg(to_jsonb(a)||jsonb_build_object('author',private.account_name(a.created_by),'read',coalesce(rd.version=a.version,false)) order by a.created_at desc) from private.announcements a left join private.announcement_reads rd on rd.announcement_id=a.id and rd.user_id=auth.uid() where (a.active or a.created_by=auth.uid()) and (cardinality(a.groups)=0 or my_group=any(a.groups) or a.created_by=auth.uid())),'[]'),
  'announcement_history',coalesce((select jsonb_agg(jsonb_build_object('id',h.id,'announcement_id',h.record_id,'at',h.changed_at,'value',h.after_value) order by h.id desc) from private.scheduler_audit h join private.announcements a on a.id::text=h.record_id where h.action='announcement' and a.created_by=auth.uid()),'[]'),
  'notifications',coalesce((select jsonb_agg(to_jsonb(n) order by n.created_at desc) from (select * from private.scheduler_notifications where user_id=auth.uid() order by created_at desc limit 100) n),'[]'),
@@ -352,7 +353,7 @@ begin
   before:=to_jsonb(q);
   if p_action='revoke' then
    if not private.is_manager() or q.created_by=auth.uid() or length(trim(coalesce(p_payload->>'response','')))=0 then raise exception 'Another manager must explain withdrawing this approval';end if;
-   update private.scheduler_requests set status='Withdrawn',response=p_payload->>'response',decided_by=auth.uid(),version=version+1 where id=q.id;
+   update private.scheduler_requests set status='Withdrawn',response=p_payload->>'response',decided_by=auth.uid(),decided_at=now(),version=version+1 where id=q.id;
    for s in select * from private.published_shifts() loop
     if s->>'person_id'=q.person_id and (s->>'end')::timestamptz>now() and private.person_conflict(q.person_id,(s->>'start')::timestamptz,(s->>'end')::timestamptz) is not null then raise exception 'Resolve published conflicts before restoring earlier availability';end if;
    end loop;
@@ -374,9 +375,9 @@ begin
    if p_payload->>'decision' is null or p_payload->>'decision' not in ('Approved','Rejected') then raise exception 'Choose an approval decision';end if;
    if p_payload->>'decision'='Approved' then
     if q.kind in ('Availability','Time off') then
-     update private.scheduler_requests set status='Approved',decided_by=auth.uid(),response=left(coalesce(p_payload->>'response',''),2000),version=version+1 where id=q.id;
+     update private.scheduler_requests set status='Approved',decided_by=auth.uid(),decided_at=now(),response=left(coalesce(p_payload->>'response',''),2000),version=version+1 where id=q.id;
      for s in select * from private.published_shifts() loop
-      if s->>'person_id'=q.person_id and (s->>'end')::timestamptz>now() and private.person_conflict(q.person_id,(s->>'start')::timestamptz,(s->>'end')::timestamptz) is not null then raise exception 'Resolve conflicting published shifts before approving';end if;
+      if s->>'person_id'=q.person_id and (s->>'end')::timestamptz>now() and private.person_conflict(q.person_id,(s->>'start')::timestamptz,(s->>'end')::timestamptz) is not null then raise exception 'Resolve conflicting published shifts before approving: % to % (Central)',to_char((s->>'start')::timestamptz at time zone 'America/Chicago','Mon DD, YYYY HH24:MI'),to_char((s->>'end')::timestamptz at time zone 'America/Chicago','Mon DD, YYYY HH24:MI');end if;
      end loop;
     else
      if q.status<>'Accepted' then raise exception 'A coworker must accept first';end if;
@@ -394,10 +395,10 @@ begin
      for wk in select ww.week_start,rr.shifts from private.schedule_weeks ww join private.schedule_revisions rr on rr.id=ww.published_id where exists(select 1 from jsonb_array_elements(rr.shifts) z where z->>'id' in (source->>'id',target->>'id')) loop
       issues:=private.shift_issues(wk.shifts,wk.week_start);if cardinality(issues)>0 then raise exception '%',array_to_string(issues,E'\n');end if;
      end loop;
-     update private.scheduler_requests set status='Approved',decided_by=auth.uid(),response=left(coalesce(p_payload->>'response',''),2000),version=version+1 where id=q.id;
+     update private.scheduler_requests set status='Approved',decided_by=auth.uid(),decided_at=now(),response=left(coalesce(p_payload->>'response',''),2000),version=version+1 where id=q.id;
      perform private.expire_shift_requests();
     end if;
-   else update private.scheduler_requests set status='Rejected',decided_by=auth.uid(),response=left(coalesce(p_payload->>'response',''),2000),version=version+1 where id=q.id;
+   else update private.scheduler_requests set status='Rejected',decided_by=auth.uid(),decided_at=now(),response=left(coalesce(p_payload->>'response',''),2000),version=version+1 where id=q.id;
    end if;
    perform private.notify_person(q.person_id,'decision:'||q.id,'Your '||lower(q.kind)||' request was '||lower(p_payload->>'decision')||'.');
    if q.claimed_by is not null then perform private.notify_person(q.payload->>'recipient','decision:'||q.id,'The shift request you accepted was '||lower(p_payload->>'decision')||'.');end if;
