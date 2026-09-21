@@ -6,4 +6,4 @@ export function trainingProgress(staffId:string,position:TrainingPosition,sessio
  return {completed,target:position.target_shifts,remaining:Math.max(0,position.target_shifts-completed),scheduled:rows.filter(s=>s.status==='Scheduled').length,started:rows.length>0};
 }
 
-export type TrainingSignoff={id:string;staff_id:string;training_position_id:string;active:boolean;created_by:string;created_at:string;version:number};
+export type TrainingSignoff={origin?:'training'|'experience'|'migration';id:string;staff_id:string;training_position_id:string;active:boolean;created_by:string;created_at:string;version:number};
