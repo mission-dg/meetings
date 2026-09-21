@@ -22,3 +22,22 @@ test('server rejects invalid drafts atomically and accepts exactly 12 hours over
  assert.equal((await read(1)).week.draft.shifts.length,1);
  }finally{await db.close()}
 });
+test('legacy invalid draft does not block another valid edit; release remains blocked',async()=>{
+ const {db,act,read,shift}=await fixture();try{
+ await act(1,'draft',{week:'2030-09-01'});let d=(await read(1)).week.draft;
+ const legacy=shift(1,'s:Casey.W','2030-09-02T16:00Z','2030-09-02T09:00Z');
+ await db.exec('alter table private.schedule_revisions disable trigger check_work_shift_times');
+ await db.query('update private.schedule_revisions set shifts=$1 where id=$2',[JSON.stringify([legacy]),d.id]);
+ await db.exec('alter table private.schedule_revisions enable trigger check_work_shift_times');
+ d=(await read(1)).week.draft;
+ const good=shift(2,'s:Alex.L','2030-09-02T16:00Z','2030-09-02T21:00Z');
+ const result=await act(1,'save',{id:d.id,version:d.version,shifts:[legacy,good]});
+ assert.ok(result.issues.some(x=>/Casey.*after start/.test(x)));
+ d=(await read(1)).week.draft;assert.equal(d.shifts.length,2);
+ await assert.rejects(act(1,'release',{id:d.id,version:d.version}),/after start/);
+ await assert.rejects(act(1,'save',{id:d.id,version:d.version,shifts:[{...legacy,end:'2030-09-02T08:00Z'},good]}),/Casey.*after start/);
+ await act(1,'save',{id:d.id,version:d.version,shifts:[{...legacy,end:'2030-09-02T21:00Z'},good]});
+ d=(await read(1)).week.draft;
+ const review=await act(1,'review',{id:d.id,version:d.version});assert.equal(review.issues.length,0);
+ }finally{await db.close()}
+});
