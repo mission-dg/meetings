@@ -1,6 +1,6 @@
 # DG Mission Meetings
 
-Deployment repository: https://github.com/mission-dg/meetings. The local folder may retain its original name; its Git remote determines the destination.
+Deployment repository: https://github.com/mission-dg/shift. The local folder may retain its original name; its Git remote determines the destination.
 
 Private manager workspace. React + TypeScript + Vite frontend; Supabase Auth and Postgres backend. GitHub Pages hosts only the static application, never staff records or notes.
 
@@ -22,7 +22,7 @@ Authentication settings:
 
 - Turn **Allow new users to sign up** off.
 - Enable Email authentication (password sign-in, invitation links, and password recovery).
-- Set Site URL to `https://mission-dg.github.io/meetings/`.
+- Set Site URL to `https://mission-dg.github.io/shift/`.
 - Add exactly that URL to allowed redirect URLs. For local development, also allow `http://localhost:5173/` and `http://127.0.0.1:5173/`.
 - Configure production email delivery before inviting your manager team. Supabase's built-in test email delivery has recipient/rate restrictions.
 
@@ -46,7 +46,7 @@ After bootstrap, use **IT Admin → SHL accounts** for invitations, new sign-in 
 
 ### Install the account service
 
-In Supabase’s Edge Functions dashboard, create a function named `manage-accounts` and paste `supabase/functions/manage-accounts/index.ts`, then deploy it. Set the function secret `APP_URL` to `https://mission-dg.github.io/meetings/`. Supabase supplies `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` to Edge Functions; these stay on the server. The function verifies the user token and checks active IT Admin status on every call. With new asymmetric signing keys, disable the legacy gateway JWT check for this function; the handler still verifies identity using `auth.getUser`. This configuration is also in `supabase/config.toml` for CLI deployment.
+In Supabase’s Edge Functions dashboard, create a function named `manage-accounts` and paste `supabase/functions/manage-accounts/index.ts`, then deploy it. Set the function secret `APP_URL` to `https://mission-dg.github.io/shift/`. Supabase supplies `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` to Edge Functions; these stay on the server. The function verifies the user token and checks active IT Admin status on every call. With new asymmetric signing keys, disable the legacy gateway JWT check for this function; the handler still verifies identity using `auth.getUser`. This configuration is also in `supabase/config.toml` for CLI deployment.
 
 Configure SMTP before inviting other managers. Keep the standard invitation and magic-link email templates using `{{ .ConfirmationURL }}`. The browser uses Supabase’s client-only implicit flow so an admin-sent link works in the recipient’s browser without a verifier stored in the admin’s browser. Tokens arrive in a URL fragment and are consumed by Supabase Auth.
 
@@ -77,7 +77,7 @@ These two values are intentionally public browser configuration. Data privacy co
 2. In **Settings → Pages**, set **Source → GitHub Actions**.
 3. Open **Actions → Publish website**. Run it manually if needed after enabling Pages or changing repository variables.
 4. Wait for the build and deployment to succeed.
-5. Open the URL reported by that workflow. Expected address: `https://mission-dg.github.io/meetings/`.
+5. Open the URL reported by that workflow. Expected address: `https://mission-dg.github.io/shift/`.
 
 The expected address is not proof of deployment. The workflow's successful deployment is the authoritative result. Until Supabase variables are supplied and the site is rebuilt, it shows the setup screen.
 

@@ -1,6 +1,6 @@
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2.57.4';
 // Admin secrets live only in this server function. Never copy them into VITE variables.
-const site=Deno.env.get('APP_URL')||'https://mission-dg.github.io/meetings/';
+const site=Deno.env.get('APP_URL')||'https://mission-dg.github.io/shift/';
 const allowedOrigin=new URL(site).origin;
 Deno.serve(async(req:Request)=>{
  const cors={'Access-Control-Allow-Origin':allowedOrigin,'Access-Control-Allow-Headers':'authorization, x-client-info, apikey, content-type','Access-Control-Allow-Methods':'POST, OPTIONS','Vary':'Origin'};
