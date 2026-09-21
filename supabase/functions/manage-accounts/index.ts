@@ -14,11 +14,27 @@ Deno.serve(async(req:Request)=>{
   const caller=createClient(url,key,{global:{headers:{Authorization:authorization}},auth:{persistSession:false}});
   const {data:{user},error:authError}=await caller.auth.getUser(authorization.replace(/^Bearer\s+/i,''));
   if(authError||!user)return response({error:'Sign in again.'},401);
-  const {data:profile}=await caller.from('manager_profiles').select('active,is_admin').eq('id',user.id).single();
+  const {data:profile}=await caller.from('manager_profiles').select('active,is_admin,is_gm').eq('id',user.id).single();
   if(!profile?.active)return response({error:'Active manager access required.'},403);
   const body=await req.json();
-  if(!profile.is_admin&&body.action!=='invite_employee')return response({error:'IT Admin access required.'},403);
+  if(!profile.is_admin&&body.action!=='invite_employee'&&!(profile.is_gm&&['create_username','reset_username'].includes(body.action)))return response({error:'IT Admin access required.'},403);
   const admin=createClient(url,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,{auth:{persistSession:false}});
+  if(['create_username','reset_username'].includes(body.action)){
+   const {data:reservation,error:reserveError}=await caller.rpc('prepare_username_login',{p_staff:String(body.staff_id||''),p_username:String(body.username||''),p_role:String(body.role||'employee'),p_target:body.action==='reset_username'?String(body.id||''):null,p_version:Number(body.version||0),p_submission:String(body.submission||'')});
+   if(reserveError)return response({error:reserveError.message},400);
+   // Generated on the server, never stored in app tables, metadata, logs or audit.
+   const bytes=crypto.getRandomValues(new Uint8Array(24));
+   const password='S!'+Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
+   const existing=await admin.auth.admin.getUserById(reservation.user_id);
+   if(existing.error&&existing.error.status!==404)return response({error:'Account lookup failed. IT must review the pending setup before retrying.'},503);
+   const saved=existing.data.user
+    ?await admin.auth.admin.updateUserById(reservation.user_id,{email:reservation.email,password,email_confirm:true})
+    :await admin.auth.admin.createUser({id:reservation.user_id,email:reservation.email,password,email_confirm:true});
+   if(saved.error)return response({error:'Account setup could not finish. IT must review the pending setup before retrying.'},503);
+   const finished=await admin.rpc('finish_username_account',{p_submission:String(body.submission)});
+   if(finished.error)return response({error:'The login was created, but workspace activation is unavailable. IT must review the pending setup before retrying.'},409);
+   return response({username:reservation.username,temporary_password:password,message:'Login ready. Share these details privately. The employee must change the password within seven days before accessing Shift.'});
+  }
   if(body.action==='invite_employee'){
    const email=String(body.email||'').trim().toLowerCase(),staff=String(body.staff_id||''),submission=String(body.submission||'');
    const {data:reservation,error:reservedError}=await caller.rpc('reserve_employee_invitation',{p_staff:staff,p_email:email,p_submission:submission});

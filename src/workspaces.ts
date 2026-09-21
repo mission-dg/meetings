@@ -2,7 +2,7 @@ import type {Workspace,WorkspaceSession,SchedulerData} from './scheduler.ts';
 export const workspaceLabels:Record<Workspace,string>={employee:'Employee View',manager:'Manager View',it:'IT View'};
 export const workspacePages:Record<Workspace,[string,string][]>= {
  employee:[['home','Today'],['schedule','Schedule'],['requests','Requests'],['announcements','Updates'],['more','More']],
- manager:[['home','Daily brief'],['schedule','Schedule builder'],['requests','Approvals'],['availability','Team availability'],['training','Training'],['meetings','Meetings & staff'],['logbook','Manager logbook'],['announcements','Announcements'],['directory','Directory'],['documents','Documents'],['reports','Reports'],['labor','Labor planning'],['accounts','Employee invitations']],
+ manager:[['home','Daily brief'],['schedule','Schedule builder'],['requests','Approvals'],['availability','Team availability'],['training','Training'],['meetings','Meetings & staff'],['logbook','Manager logbook'],['announcements','Announcements'],['directory','Directory'],['documents','Documents'],['reports','Reports'],['labor','Labor planning'],['accounts','Employee accounts']],
  it:[['home','System overview'],['accounts','Accounts & access'],['administration','Staff & permissions'],['directory','Directory'],['audit','Change history'],['help','Settings & help']]
 };
 export const employeeMore:[string,string][]=[['availability','My availability'],['training','Training'],['directory','Team directory'],['documents','Documents'],['profile','My profile & calendar'],['help','Help']];

@@ -5,11 +5,11 @@ import vm from 'node:vm';
 import ts from 'typescript';
 const raw=(await readFile(new URL('../supabase/functions/manage-accounts/index.ts',import.meta.url),'utf8')).replace(/^import .*\n/,'');
 const compiled=ts.transpileModule(raw,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.None}}).outputText;
-function handler({authenticated=true,isAdmin=true,approvalError=null,reservation={fresh:true},reservedError=null,linkError=null,inviteError=null,deliveryThrows=false}={}){
+function handler({authenticated=true,isAdmin=true,isGm=false,usernameReservation=null,usernameExisting=false,usernameError=null,approvalError=null,reservation={fresh:true},reservedError=null,linkError=null,inviteError=null,deliveryThrows=false}={}){
  let handle;const calls=[];
- const caller={auth:{getUser:async()=>({data:{user:authenticated?{id:'admin'}:null},error:null}),signInWithOtp:async args=>{calls.push(['link',args]);return {error:null}}},from:()=>({select:()=>({eq:()=>({single:async()=>({data:{id:'target',active:true,is_admin:isAdmin}})})})}),rpc:async(name,args)=>{calls.push([name,args]);return name==='reserve_employee_invitation'?{data:reservation,error:reservedError}:{error:approvalError}}};
- const admin={rpc:async(name,args)=>{calls.push([name,args]);return {error:linkError}},auth:{admin:{inviteUserByEmail:async(email,args)=>{calls.push(['invite',email,args]);if(deliveryThrows)throw Error('Network');return {data:{user:{id:'new'}},error:inviteError}},getUserById:async()=>({data:{user:{email:'manager@example.com'}},error:null})}}};
- vm.runInNewContext(compiled,{Request,Response,URL,createClient:(_url,key)=>{calls.push(['client',key]);return key==='service'?admin:caller},Deno:{env:{get:name=>({APP_URL:'https://mission-dg.github.io/shift/',SUPABASE_URL:'https://test.supabase.co',SUPABASE_ANON_KEY:'anon',SUPABASE_SERVICE_ROLE_KEY:'service'})[name]},serve:fn=>{handle=fn}}});
+ const caller={auth:{getUser:async()=>({data:{user:authenticated?{id:'admin'}:null},error:null}),signInWithOtp:async args=>{calls.push(['link',args]);return {error:null}}},from:()=>({select:()=>({eq:()=>({single:async()=>({data:{id:'target',active:true,is_admin:isAdmin,is_gm:isGm}})})})}),rpc:async(name,args)=>{calls.push([name,args]);return name==='prepare_username_login'?{data:usernameReservation,error:reservedError}:name==='reserve_employee_invitation'?{data:reservation,error:reservedError}:{error:approvalError}}};
+ const admin={rpc:async(name,args)=>{calls.push([name,args]);return {error:linkError}},auth:{admin:{inviteUserByEmail:async(email,args)=>{calls.push(['invite',email,args]);if(deliveryThrows)throw Error('Network');return {data:{user:{id:'new'}},error:inviteError}},getUserById:async()=>usernameReservation?({data:{user:usernameExisting?{id:usernameReservation.user_id,email:usernameReservation.email}:null},error:usernameExisting?null:{status:404}}):({data:{user:{email:'manager@example.com'}},error:null}),createUser:async args=>{calls.push(['createUser',args]);return {data:{user:{id:args.id}},error:usernameError}},updateUserById:async(id,args)=>{calls.push(['updateUserById',id,args]);return {error:usernameError}}}}};
+ vm.runInNewContext(compiled,{crypto,Uint8Array,Request,Response,URL,createClient:(_url,key)=>{calls.push(['client',key]);return key==='service'?admin:caller},Deno:{env:{get:name=>({APP_URL:'https://mission-dg.github.io/shift/',SUPABASE_URL:'https://test.supabase.co',SUPABASE_ANON_KEY:'anon',SUPABASE_SERVICE_ROLE_KEY:'service'})[name]},serve:fn=>{handle=fn}}});
  return {calls,request:(body,origin='https://mission-dg.github.io')=>handle(new Request('https://test.supabase.co/functions/v1/manage-accounts',{method:'POST',headers:{Authorization:'Bearer token',Origin:origin,'Content-Type':'application/json'},body:JSON.stringify(body)}))};
 }
 test('account endpoint rejects unauthenticated/nonadmin callers before using service credentials',async()=>{
@@ -34,4 +34,20 @@ test('employee invitations: manager-only reservation, replay safety and partial-
  const partial=handler({isAdmin:false,linkError:{message:'Link failed'}});assert.equal((await partial.request(body)).status,409);
  const failed=handler({isAdmin:false,inviteError:{message:'Rate limit'}});assert.equal((await failed.request(body)).status,400);assert.ok(failed.calls.some(c=>c[0]==='finish_employee_invitation'&&c[1].p_user===null));
  const uncertain=handler({isAdmin:false,deliveryThrows:true});assert.equal((await uncertain.request(body)).status,503);
+});
+
+
+test('username accounts: IT/GM create only employee logins, no email, random temporary password, service-only finish',async()=>{
+ const reservation={user_id:'new-id',username:'alex.lane',email:'alex.lane@users.shift.invalid'};
+ const body={action:'create_username',staff_id:'Alex.L',username:'alex.lane',submission:'test',is_admin:true};
+ for(const permissions of [{isAdmin:true},{isAdmin:false,isGm:true}]){
+  const h=handler({...permissions,usernameReservation:reservation});const r=await h.request(body);assert.equal(r.status,200);const result=await r.json();assert.match(result.temporary_password,/^S![a-f0-9]{48}$/);
+  const create=h.calls.find(c=>c[0]==='createUser')[1];assert.equal(h.calls.find(c=>c[0]==='prepare_username_login')[1].p_role,'employee');assert.equal(create.email_confirm,true);assert.equal(create.email,reservation.email);assert.equal(create.id,reservation.user_id);assert.equal(create.role,undefined);assert.equal(create.app_metadata,undefined);
+  assert.ok(h.calls.some(c=>c[0]==='finish_username_account'));assert.ok(!h.calls.some(c=>['invite','admin_register_manager','link'].includes(c[0])));
+ }
+ const denied=handler({isAdmin:false,isGm:false});assert.equal((await denied.request(body)).status,403);
+ const rejected=handler({usernameReservation:reservation,reservedError:{message:'Taken'}});assert.equal((await rejected.request(body)).status,400);assert.ok(!rejected.calls.some(c=>c[0]==='createUser'));
+ const reissue=handler({usernameReservation:reservation,usernameExisting:true});assert.equal((await reissue.request(body)).status,200);assert.ok(reissue.calls.some(c=>c[0]==='updateUserById'));
+ const partial=handler({usernameReservation:reservation,linkError:{message:'Link failure'}});assert.equal((await partial.request(body)).status,409);
+ const failed=handler({usernameReservation:reservation,usernameError:{message:'Auth failure'}});assert.equal((await failed.request(body)).status,503);assert.ok(!failed.calls.some(c=>c[0]==='finish_username_account'));
 });
