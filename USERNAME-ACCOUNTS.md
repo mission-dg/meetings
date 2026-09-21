@@ -1,35 +1,44 @@
 # Username accounts for Shift
 
-Status: implemented and locally tested; production installation and publication pending.
+Status: implemented and locally tested; live installation and publication pending.
 
-## Daily use
+## Create a login — no email
 
-IT: Accounts & access → Username accounts. GM: Manager View → Employee accounts → Username accounts.
+Open **IT View → Accounts & access**, or **Manager View → Employee accounts** as GM.
 
-1. Select an existing active employee and choose a username (3–32 letters, numbers, dots, underscores or hyphens).
-2. Create the account. Shift generates a random temporary password and displays it once. Share the username and password privately; no email is sent.
-3. The employee signs in using that username and temporary password. They must choose their own password within seven days before any workspace records are available.
-4. Accounts start with employee access. IT can change roles using existing controls after activation.
+1. Choose an existing active teammate.
+2. Choose **Employee** or **Manager**.
+3. Enter a username and click **Create account**.
+4. Share the displayed username and generated temporary password privately.
+5. The person signs in and sets their private password within seven days. No workspace data is accessible before that step.
 
-A username ignores capitalization and is permanently reserved. Staff identity, meetings and training history are unchanged. IT and GM may reissue an unactivated temporary password from the account list. This invalidates the preceding temporary password. Interrupted provisioning can be retried after two minutes using the same username. Never create a second employee record as a workaround.
+Usernames ignore capitalization. They accept 3–32 letters, numbers, dots, underscores or hyphens. Existing employee IDs, meeting history and training stay unchanged. Manager accounts receive manager access after activation; creation does not grant GM or IT access. Existing role-management controls continue to handle those permissions.
 
-Existing email/password accounts continue to work. Email invitations remain separately gated by delivery verification. Username accounts use a reserved internal authentication address under `users.shift.invalid`; this is not an employee email and receives no mail.
+## Change a username or reset a password
 
-This change adds account creation and reissuing **unactivated** temporary credentials. It does not convert existing email accounts or add self-service recovery for activated username accounts. Recovery for an activated account still needs administrator assistance through Supabase; do not create a duplicate account or staff record.
+GM and IT can use **Change username / reset password** on a username account, including an account that has already been used. Keep the username unchanged to reset only the password. The replacement temporary password is displayed once and must be changed at the next sign-in. Passwords cannot be viewed or recovered. The action preserves records and roles, revokes calendar links, and invalidates prior sessions. Disabled accounts must be deliberately reactivated first.
 
-## Installation order
+To avoid accidentally locking yourself out, use **Change password** for your own password; another GM/IT must change your username. Old usernames remain reserved and cannot be assigned to another person.
 
-1. Take a fresh protected backup using `supabase/maintenance/backup_before_usernames.sql`.
-2. Apply only `supabase/migrations/016_username_accounts.sql` to the existing project. Do not rerun the original tracker/workspace bundles.
-3. Deploy the updated `supabase/functions/manage-accounts/index.ts` through the existing server function; preserve its environment and authentication settings.
+An account left at **Setup needs IT review** after an uncertain provisioning failure cannot be blindly retried. An administrator must reconcile the Auth user and the pending operation before issuing credentials, so late requests cannot overwrite a newer password.
+
+Existing email/password accounts continue to work. This release does not convert those accounts to usernames automatically. Username accounts use a reserved internal Auth identity under `users.shift.invalid`, not an employee email address. Optional email delivery is entirely separate from username creation and reset.
+
+## Installation
+
+1. Capture a fresh protected backup using `supabase/maintenance/backup_before_usernames.sql`.
+2. If migration 016 has not been installed, apply `016_username_accounts.sql`; then apply `017_account_credentials.sql`. Apply each once. Do not rerun the tracker/workspace installer.
+3. Deploy `supabase/functions/manage-accounts/index.ts` to the existing function, preserving server settings and secrets.
 4. Publish the frontend from the development branch to `/shift/`.
-5. Exercise a designated test employee account: creation by IT/GM, initial sign-in, required password change, employee-only workspace, subsequent username sign-in, duplicate rejection and expired-password reissue. The person performing the check must enter their own permanent password.
+5. Verify a designated test employee and manager through creation, password change, sign-in, reset and rename. The person testing must enter their private password themselves.
 
-The database migration creates no Auth users, changes no roles and leaves existing records intact. Pending username users receive no employee/manager membership until activation verifies an actual Auth password-hash change, an unexpired setup window, active employee status and the provisioning administrator's continued eligibility. Direct API calls enforce the same restrictions. Passwords never enter application records, metadata or audit logs; a private temporary Auth-hash marker is discarded on activation.
+Installation creates no accounts and changes no existing roles. Auth administration uses the server-side service credential only. Passwords are not copied into application records, metadata or audit logs. The private temporary Auth-hash marker is cleared on activation. Pending setup and reset accounts are blocked from application data by database permission helpers, including direct API calls. Activated username access checks the actual Auth session against the latest credential operation; refreshed old tokens cannot restore access.
+
+Supabase’s supported admin password update invalidates Auth sessions; Shift additionally checks session records for application access. Reference: [Supabase session guidance](https://supabase.com/docs/guides/auth/sessions).
 
 ## Validation
 
-- All 41 automated test groups pass, including real database permission/activation tests and mocked account-service failure/retry cases.
+- All 44 automated test groups pass, including database permission, manager activation, active-account reset, old-session denial, stable identity/roles, username reservation, duplicate submissions and account-service failures.
 - Production build passes.
-- Local account form is visible, accepts a case-insensitive username and refuses to create real credentials in disconnected demo mode.
-- A hosted Supabase username-account lifecycle has not yet been exercised. Installation does not itself enable production rollout to employees.
+- Browser preview shows Employee/Manager selection and account-editing controls without an email field or invitation prerequisite.
+- Hosted lifecycle verification remains a rollout step; local tests do not substitute for testing a real Supabase login.
