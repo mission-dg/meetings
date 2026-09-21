@@ -6,7 +6,7 @@ Private manager workspace. React + TypeScript + Vite frontend; Supabase Auth and
 
 ## Current status
 
-Supabase project `jgekdmnfakagmuudywmb` is configured: migrations 001–003 are installed, the account service is deployed, public registration is disabled, and GitHub has the public connection variables. The initial IT Admin is active; the GM has not yet been assigned. End-to-end email sign-in and authenticated workflows still need verification. A development-only visual preview contains fictional examples and disables saving; it is not included as a usable route in production.
+Supabase project `jgekdmnfakagmuudywmb` is configured: migrations 001–003 are installed, the account service is deployed, public registration is disabled, and GitHub has the public connection variables. The initial IT Admin is active; the GM has not yet been assigned. The owner confirmed successful invitation sign-in to the live Meeting Tracker overview. Other authenticated editing workflows still need live verification; custom SMTP is not configured yet. A development-only visual preview contains fictional examples and disables saving; it is not included as a usable route in production.
 
 Implemented: dashboard, staff directory, scheduling/rescheduling, completed/missed/cancelled outcomes, shared notes, creator-only editing, GM requests and links, six-month labels, database audit history, permanent staff IDs, IT Admin account management, employee CSV imports, and MISSION BBQ-inspired styling. This is a new empty project; no spreadsheet records have been imported. Full historical-entry/correction screens and Calendar integration are follow-up work.
 
