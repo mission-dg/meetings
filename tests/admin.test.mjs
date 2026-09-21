@@ -10,9 +10,11 @@ test('CSV accepts quoted names, BOM, CRLF; rejects malformed or partial files',(
 });
 test('admin permissions, stale roles, GM transfer, atomic/idempotent imports, permanent collisions',async()=>{
  const db=new PGlite();await db.exec(`create role anon;create role authenticated;create schema auth;create table auth.users(id uuid primary key);create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema auth to authenticated;grant execute on function auth.uid() to authenticated;`);
- for(const name of ['001_tracker','002_admin_import'])await db.exec(await readFile(new URL(`../supabase/migrations/${name}.sql`,import.meta.url),'utf8'));
+ for(const name of ['001_tracker','002_admin_import','003_admin_bootstrap'])await db.exec(await readFile(new URL(`../supabase/migrations/${name}.sql`,import.meta.url),'utf8'));
  const a='00000000-0000-0000-0000-000000000001',b='00000000-0000-0000-0000-000000000002',c='00000000-0000-0000-0000-000000000003';
- await db.exec(`insert into auth.users values('${a}'),('${b}'),('${c}');insert into manager_profiles(id,name,is_gm,is_admin) values('${a}','Admin',false,true),('${b}','GM',true,false);`);
+ await db.exec(`insert into auth.users values('${a}'),('${b}'),('${c}');insert into manager_profiles(id,name,is_gm,is_admin) values('${a}','Admin',false,true);`);
+ assert.equal((await db.query('select count(*)::int as n from manager_profiles where is_gm')).rows[0].n,0);
+ await db.exec(`insert into manager_profiles(id,name,is_gm,is_admin) values('${b}','GM',true,false);`);
  async function as(id,sql,params=[]){await db.exec(`set role authenticated;set request.jwt.claim.sub='${id}';`);try{return await db.query(sql,params)}finally{await db.exec('reset role')}}
  await assert.rejects(as(b,`select admin_register_manager('${c}','Spoof',true)`),/IT Admin/);
  await as(a,`select admin_register_manager('${c}','New admin',true)`);

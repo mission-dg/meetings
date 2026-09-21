@@ -14,7 +14,7 @@ Implemented: dashboard, staff directory, scheduling/rescheduling, completed/miss
 
 Create a new project in your Supabase account. Store the database password privately; it never belongs in this repository or frontend.
 
-In the SQL Editor, run `supabase/migrations/001_tracker.sql`, then `supabase/migrations/002_admin_import.sql`, once each on the new project. It creates the tables, access policies, constraints, and audit triggers. Test on a new project first; this migration is not an upgrade for another application.
+In the SQL Editor, run `supabase/migrations/001_tracker.sql`, then `supabase/migrations/002_admin_import.sql`, then `supabase/migrations/003_admin_bootstrap.sql`, once each on the new project. It creates the tables, access policies, constraints, and audit triggers. Test on a new project first; this migration is not an upgrade for another application.
 
 Authentication settings:
 
@@ -38,7 +38,7 @@ values ('IT-ADMIN-AUTH-UUID', 'IT Admin name', true, false, true),
 commit;
 ```
 
-If you personally hold both roles, create just one row with both booleans true. Roles remain independent: IT Admin does not grant the GM’s special-meeting authority, and neither role overrides creator-only editing. Bootstrap requires one active GM; adding the two profiles in one transaction satisfies that constraint.
+If you personally hold both roles, create just one row with both booleans true. Roles remain independent: IT Admin does not grant the GM’s special-meeting authority, and neither role overrides creator-only editing. You may create only the IT Admin first with `is_gm=false`. Migration 003 allows the GM to remain unassigned during initial setup. After the first active GM is assigned, a replacement is required before removing that designation.
 
 After bootstrap, use **IT Admin → Manager accounts** for invitations, new sign-in links, names, activation, IT Admin access, and GM reassignment. Another IT Admin must remove your own administrator access. Assign a replacement before deactivating the current GM. Open linked GM bookings must be resolved or cancelled before transferring the designation.
 
