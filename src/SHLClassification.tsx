@@ -1,0 +1,8 @@
+import {useState} from 'react';
+import type {SchedulerData} from './scheduler';
+import {supabase} from './client';
+export function SHLClassification({data,preview,reload}:{data:SchedulerData;preview:boolean;reload:()=>Promise<void>}){
+ const [busy,setBusy]=useState(false),[error,setError]=useState('');if(!data.self.is_manager)return null;
+ const canEdit=data.self.is_admin||data.self.is_gm;
+ return <section className="panel scheduler-card"><h2>SHL schedule category</h2><p>Hourly SHLs appear on the main roster. Salaried SHLs appear in Management & office and are excluded from hourly totals.</p>{data.people.filter(p=>p.group==='SHL'&&p.active).map(p=><div className="person-row account-permission-row" key={p.id}><div className="grow"><strong>{p.name}</strong><small>{p.employment_type||'Unclassified'}</small></div>{canEdit&&<select aria-label={'Schedule category for '+p.name} value={p.employment_type||'Unclassified'} disabled={busy} onChange={async e=>{const value=e.target.value;if(!confirm(`Classify ${p.name} as ${value}? This changes roster visibility and hourly planning totals.`))return;setBusy(true);setError('');try{if(preview)throw Error('Disconnected demo: classification is not saved.');const r=await supabase!.rpc('set_shl_employment',{p_person:p.id,p_type:value,p_version:p.manager_version});if(r.error)throw r.error;await reload()}catch(e){setError((e as Error).message)}finally{setBusy(false)}}}><option value="Unclassified" disabled>Choose a category</option><option>Hourly</option><option>Salaried</option></select>}</div>)}{error&&<p role="alert" className="error">{error}</p>}</section>
+}
