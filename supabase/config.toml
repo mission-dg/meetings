@@ -1,0 +1,3 @@
+# The function verifies the bearer token with Supabase Auth itself.
+[functions.manage-accounts]
+verify_jwt = false

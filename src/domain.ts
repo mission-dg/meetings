@@ -1,4 +1,4 @@
-export type Profile={id:string;name:string;active:boolean;is_gm:boolean;is_admin:boolean};
+export type Profile={id:string;name:string;active:boolean;is_gm:boolean;is_admin:boolean;version:number};
 export type Employee={id:string;first_name:string;last_name:string;department:'FOH'|'BOH';active:boolean;priority:boolean};
 export type Meeting={id:string;staff_id:string;manager_id:string;created_by:string;type:'Routine'|'Special';scheduled_at:string;status:'Scheduled'|'Completed'|'Cancelled'|'Missed';completed_on:string|null;version:number};
 export type Note={id:string;meeting_id:string;body:string;created_by:string;updated_at:string;version:number};

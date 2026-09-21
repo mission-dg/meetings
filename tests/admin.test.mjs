@@ -1,0 +1,40 @@
+import {PGlite} from '@electric-sql/pglite';
+import {readFile} from 'node:fs/promises';
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {parseEmployees} from '../src/importCsv.ts';
+test('CSV accepts quoted names, BOM, CRLF; rejects malformed or partial files',()=>{
+ assert.deepEqual(parseEmployees('\uFEFFFirst Name,Last Name,Department,Active\r\n"Alex, A.","O""Brien",foh,\r\n'),[{first_name:'Alex, A.',last_name:'O"Brien',department:'FOH',active:true}]);
+ assert.equal(parseEmployees('Active,Department,Last Name,First Name\nno,BOH,Smith,Jane')[0].active,false);
+ for(const csv of ['First Name,Last Name,Department,Active\nA,B,BAR,Yes','First Name,Last Name,Department,Active\n"unfinished','First Name,Last Name,Department,Active\nA,B,FOH,maybe','First Name,Last Name,Department,Active\nA,B,FOH,Yes,extra','First Name,First Name,Department,Active\nA,B,FOH,Yes'])assert.throws(()=>parseEmployees(csv));
+});
+test('admin permissions, stale roles, GM transfer, atomic/idempotent imports, permanent collisions',async()=>{
+ const db=new PGlite();await db.exec(`create role anon;create role authenticated;create schema auth;create table auth.users(id uuid primary key);create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema auth to authenticated;grant execute on function auth.uid() to authenticated;`);
+ for(const name of ['001_tracker','002_admin_import'])await db.exec(await readFile(new URL(`../supabase/migrations/${name}.sql`,import.meta.url),'utf8'));
+ const a='00000000-0000-0000-0000-000000000001',b='00000000-0000-0000-0000-000000000002',c='00000000-0000-0000-0000-000000000003';
+ await db.exec(`insert into auth.users values('${a}'),('${b}'),('${c}');insert into manager_profiles(id,name,is_gm,is_admin) values('${a}','Admin',false,true),('${b}','GM',true,false);`);
+ async function as(id,sql,params=[]){await db.exec(`set role authenticated;set request.jwt.claim.sub='${id}';`);try{return await db.query(sql,params)}finally{await db.exec('reset role')}}
+ await assert.rejects(as(b,`select admin_register_manager('${c}','Spoof',true)`),/IT Admin/);
+ await as(a,`select admin_register_manager('${c}','New admin',true)`);
+ await assert.rejects(as(a,`select admin_update_manager('${a}','Self',false,false,false,1)`),/Another IT Admin/);
+ await assert.rejects(as(b,`select admin_update_manager('${b}','Self',true,true,true,1)`),/IT Admin/);
+ await as(a,`select admin_update_manager('${c}','New GM',true,true,true,1)`);
+ assert.equal((await db.query('select id from manager_profiles where active and is_gm')).rows[0].id,c);
+ await assert.rejects(as(a,`select admin_update_manager('${c}','Stale',true,true,true,1)`),/changed/);
+ await assert.rejects(as(a,`select admin_update_manager('${c}','No GM',false,true,false,2)`),/Assign another/);
+ await assert.rejects(as(b,`select admin_import_staff(gen_random_uuid(),'[]')`),/IT Admin/);
+ const batch='10000000-0000-0000-0000-000000000001';
+ const payload=JSON.stringify([{first_name:'Isaac',last_name:'Lane',department:'FOH',active:true},{first_name:'isaac',last_name:'lane',department:'BOH',active:true},{first_name:'Isaac',last_name:'Linder',department:'FOH',active:false},{first_name:'Isaac',last_name:'Lincoln',department:'FOH',active:true},{first_name:'Isaac',last_name:'Linton',department:'FOH',active:true}]);
+ const importRows=()=>as(a,'select admin_import_staff($1,$2) as result',[batch,payload]);
+ assert.deepEqual((await importRows()).rows[0].result,{added:4,skipped:1});
+ assert.deepEqual((await importRows()).rows[0].result,{added:4,skipped:1});
+ assert.deepEqual((await db.query('select id from staff order by created_at,id')).rows.map(r=>r.id).sort(),['Isaac.L','Isaac.Li','Isaac.Lin','Isaac.Lin2'].sort());
+ await assert.rejects(as(a,'select admin_import_staff($1,$2)',[batch,'[]']),/changed/);
+ await assert.rejects(as(a,'select admin_import_staff(gen_random_uuid(),$1)',[JSON.stringify([{first_name:'New',last_name:'Valid',department:'BOH',active:true},{first_name:'Invalid',last_name:'Row',department:'BAD',active:true}])]),/Every row/);
+ assert.equal((await db.query("select * from staff where first_name='New'")).rows.length,0);
+ await as(a,"insert into staff(first_name,last_name,department) values('Pat','Li','FOH'),('pat','Li','BOH'),('PAT','Li','FOH')");
+ assert.deepEqual((await db.query("select id from staff where lower(first_name)='pat' order by id")).rows.map(r=>r.id).sort(),['Pat.L','pat.Li','PAT.Li2'].sort());
+ await as(a,"update staff set first_name='Renamed',department='BOH',active=false where id='Isaac.L'");
+ assert.equal((await db.query("select id from staff where first_name='Renamed'")).rows[0].id,'Isaac.L');
+ await db.close();
+});

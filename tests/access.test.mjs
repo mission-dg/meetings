@@ -6,8 +6,9 @@ test('real SQL: shared reads, creator-only edits, active accounts, GM restrictio
  const db=new PGlite();
  await db.exec(`create role anon;create role authenticated;create schema auth;create table auth.users(id uuid primary key);create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema auth to authenticated;grant execute on function auth.uid() to authenticated;`);
  await db.exec(await readFile(new URL('../supabase/migrations/001_tracker.sql',import.meta.url),'utf8'));
+ await db.exec(await readFile(new URL('../supabase/migrations/002_admin_import.sql',import.meta.url),'utf8'));
  const a='00000000-0000-0000-0000-000000000001',b='00000000-0000-0000-0000-000000000002',c='00000000-0000-0000-0000-000000000003';
- await db.exec(`insert into auth.users values('${a}'),('${b}'),('${c}');insert into manager_profiles values('${a}','Creator',true,true,true),('${b}','Other manager',true,false,false),('${c}','Inactive',false,false,false);`);
+ await db.exec(`insert into auth.users values('${a}'),('${b}'),('${c}');insert into manager_profiles(id,name,active,is_gm,is_admin) values('${a}','Creator',true,true,true),('${b}','Other manager',true,false,false),('${c}','Inactive',false,false,false);`);
  async function as(id,sql){await db.exec(`set role authenticated;set request.jwt.claim.sub='${id}';`);try{return await db.query(sql)}finally{await db.exec('reset role')}}
  const staff=(await as(a,`insert into staff(first_name,last_name,department) values('Isaac','Linder','FOH') returning *`)).rows[0];assert.equal(staff.id,'Isaac.L');
  const second=(await as(a,`insert into staff(first_name,last_name,department) values('isaac','Linder','BOH') returning *`)).rows[0];assert.equal(second.id,'isaac.Li');
