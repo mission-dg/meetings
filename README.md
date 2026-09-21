@@ -1,14 +1,18 @@
+> **Workspace upgrade:** The distinct Employee/Manager/IT workspaces and migrations 011–015 are documented in [WORKSPACE-UPGRADE.md](WORKSPACE-UPGRADE.md). Use that versioned installation sequence for the complete upgrade. Live activation, verified email delivery, and the pilot remain required.
+
 # DG Mission Meetings
 
-Deployment repository: https://github.com/mission-dg/meetings. The local folder may retain its original name; its Git remote determines the destination.
+Deployment repository: https://github.com/mission-dg/shift. The local folder may retain its original name; its Git remote determines the destination.
 
 Private manager workspace. React + TypeScript + Vite frontend; Supabase Auth and Postgres backend. GitHub Pages hosts only the static application, never staff records or notes.
 
 ## Current status
 
-Supabase project `jgekdmnfakagmuudywmb` is configured: migrations 001–003 are installed, the account service is deployed, public registration is disabled, and GitHub has the public connection variables. The initial IT Admin is active; the GM has not yet been assigned. The owner confirmed successful invitation sign-in to the live Meeting Tracker overview. Other authenticated editing workflows still need live verification; custom SMTP is not configured yet. A development-only visual preview contains fictional examples and disables saving; it is not included as a usable route in production.
+Migrations 001–008 are installed in the connected project. Scheduler release 0.2 is built and tested locally; its live installation and employee rollout are tracked in [SCHEDULER-SETUP.md](SCHEDULER-SETUP.md). Follow that checklist before publishing this frontend. Employee invitations remain disabled until a verified sender and successful invitation/reset delivery are recorded.
 
-Implemented: dashboard, staff directory, scheduling/rescheduling, completed/missed/cancelled outcomes, shared notes, creator-only editing, GM requests and links, six-month labels, database audit history, permanent staff IDs, IT Admin account management, employee CSV imports, and MISSION BBQ-inspired styling. This is a new empty project; no spreadsheet records have been imported. Full historical-entry/correction screens and Calendar integration are follow-up work.
+The scheduler adds weekly private drafts, queued server releases, employee/CA views, requests and shift trades, linked training, and in-app announcements. Meetings & staff keeps the existing manager tools and six-month rules. The development preview uses fictional data and in-memory draft demonstrations; it does not change live records or send email. Preview access is disabled in production.
+
+The sections below document the original tracker and its incremental migrations. Scheduler 009 replaces the earlier standalone-training creation rules: new training requires work-shift links and an end time, and work times may extend outside customer opening hours. Earlier standalone records remain intact.
 
 ## 1. Create Supabase
 
@@ -20,7 +24,7 @@ Authentication settings:
 
 - Turn **Allow new users to sign up** off.
 - Enable Email authentication (password sign-in, invitation links, and password recovery).
-- Set Site URL to `https://mission-dg.github.io/meetings/`.
+- Set Site URL to `https://mission-dg.github.io/shift/`.
 - Add exactly that URL to allowed redirect URLs. For local development, also allow `http://localhost:5173/` and `http://127.0.0.1:5173/`.
 - Configure production email delivery before inviting your manager team. Supabase's built-in test email delivery has recipient/rate restrictions.
 
@@ -44,7 +48,7 @@ After bootstrap, use **IT Admin → SHL accounts** for invitations, new sign-in 
 
 ### Install the account service
 
-In Supabase’s Edge Functions dashboard, create a function named `manage-accounts` and paste `supabase/functions/manage-accounts/index.ts`, then deploy it. Set the function secret `APP_URL` to `https://mission-dg.github.io/meetings/`. Supabase supplies `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` to Edge Functions; these stay on the server. The function verifies the user token and checks active IT Admin status on every call. With new asymmetric signing keys, disable the legacy gateway JWT check for this function; the handler still verifies identity using `auth.getUser`. This configuration is also in `supabase/config.toml` for CLI deployment.
+In Supabase’s Edge Functions dashboard, create a function named `manage-accounts` and paste `supabase/functions/manage-accounts/index.ts`, then deploy it. Set the function secret `APP_URL` to `https://mission-dg.github.io/shift/`. Supabase supplies `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` to Edge Functions; these stay on the server. The function verifies the user token and checks active IT Admin status on every call. With new asymmetric signing keys, disable the legacy gateway JWT check for this function; the handler still verifies identity using `auth.getUser`. This configuration is also in `supabase/config.toml` for CLI deployment.
 
 Configure SMTP before inviting other managers. Keep the standard invitation and magic-link email templates using `{{ .ConfirmationURL }}`. The browser uses Supabase’s client-only implicit flow so an admin-sent link works in the recipient’s browser without a verifier stored in the admin’s browser. Tokens arrive in a URL fragment and are consumed by Supabase Auth.
 
@@ -75,7 +79,7 @@ These two values are intentionally public browser configuration. Data privacy co
 2. In **Settings → Pages**, set **Source → GitHub Actions**.
 3. Open **Actions → Publish website**. Run it manually if needed after enabling Pages or changing repository variables.
 4. Wait for the build and deployment to succeed.
-5. Open the URL reported by that workflow. Expected address: `https://mission-dg.github.io/meetings/`.
+5. Open the URL reported by that workflow. Expected address: `https://mission-dg.github.io/shift/`.
 
 The expected address is not proof of deployment. The workflow's successful deployment is the authoritative result. Until Supabase variables are supplied and the site is rebuilt, it shows the setup screen.
 
@@ -149,3 +153,26 @@ At the target, the status is **Ready for sign-off**. Any active manager may conf
 Older sessions appear under **Training needs a job**. Their creator can use **Choose / correct training job** in session details without changing the time or outcome. Completed legacy sessions count after assignment. Training job membership is independent of the employee’s home position group, allowing cross-training. Training never resets meeting reminders or resolves GM requests.
 
 Verification: eight test groups pass, including actual SQL migration/policy/target/stale-update checks, preserving legacy records, job seeding, duplicate-shift counting, and date/timezone cases. Browser checks verified 2/4 progress, 4/4 Ready for sign-off, the job catalog, and prefilled next-shift scheduling. No live employee qualification was signed off during validation.
+
+## Employee removal and IT role testing
+
+Migration `007_staff_removal_it_roles.sql` adds typed employee removal and IT-role changes. The user approved installation, and migration 007 was installed successfully in the connected Supabase project on September 21, 2026. No existing account roles or employee statuses were changed during installation.
+
+IT Admins can use **Staff directory → Remove**. The confirmation window requires exactly `Remove FirstName LastName` and then `Confirm`, including capitalization and spacing. The server checks the phrases against the current stored name. Removal sets Active to false; IDs, meeting/training/request history, notes, and open bookings remain. The window lists open meetings and training involving the employee (including trainer assignments). To restore them, choose Staff directory → All → Edit → Active employee. Active staff must use the removal window instead of an unchecked Active field.
+
+IT Admins and the active GM can use **IT Admin → SHL accounts → Grant / Remove IT access**. A review panel identifies the account and intended change. The new server function changes only IT membership, preserving manager/GM roles and active state. Ordinary or inactive managers cannot call it. It checks profile versions, serializes competing role changes, preserves at least one active IT Admin, and records changes in the existing audit history. Self-demotion is allowed when another active IT Admin remains; a GM may promote themselves for testing. Invitations, roster editing, and general account editing remain IT-only. No actual account was promoted or demoted during validation.
+
+Validation: nine test groups pass, including typed-name mismatch/rename cases, history preservation, unauthorized callers, GM promotions/demotions, self-demotion, stale changes, inactive targets, and last-admin protection. Browser checks confirmed both phrases are required exactly and the role-change review panel names its target.
+
+
+## Primary jobs and additional qualifications
+
+Migration `008_primary_jobs.sql` was installed successfully in the connected Supabase project on September 21, 2026. It adds an optional primary job to each employee without changing existing IDs, bookings, or training history. Existing employees start with no primary job assigned. IT Admins choose it in **Staff directory → Edit → Primary job**; the job must be active and in the employee’s FOH, HOH, or Catering group. The directory shows and filters by primary job, and the scheduling form offers the same lookup filter.
+
+The primary job is independent of qualifications. Employees can train in any number of other jobs, including jobs in another position group. Each employee/job pair retains its own completed-shift count, target, and manager sign-off. Select the job being learned when scheduling each training session. **Training progress** labels each row as Primary job or Additional job, and the directory shows additional-job progress. Changing a primary job or transferring groups preserves every training session and sign-off. Assigning a primary job does not mark someone fully trained.
+
+An archived primary job stays attached until deliberately reassigned, but cannot be newly assigned. Before changing the position group of a job used as someone’s primary job, reassign those employees. General staff editing remains IT-only, and meeting/training creator permissions remain unchanged.
+
+Validation: ten test groups pass, including an employee completing and receiving sign-off in all six jobs; primary-job changes and transfers preserve all 24 sessions and six qualifications. Server checks reject mismatched groups, archived new assignments, and unauthorized edits.
+
+Browser checks verified primary-job filtering, group-specific choices, cleared incompatible selections, and scheduling a secondary Line session for an employee whose primary job remains GSR. Unchanged forms close without a warning. The production build passes.
