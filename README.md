@@ -152,7 +152,7 @@ Verification: eight test groups pass, including actual SQL migration/policy/targ
 
 ## Employee removal and IT role testing
 
-Migration `007_staff_removal_it_roles.sql` adds typed employee removal and IT-role changes. Installation is pending approval because it expands the GM's ability to grant IT privileges. Install before publishing this frontend.
+Migration `007_staff_removal_it_roles.sql` adds typed employee removal and IT-role changes. The user approved installation, and migration 007 was installed successfully in the connected Supabase project on September 21, 2026. No existing account roles or employee statuses were changed during installation.
 
 IT Admins can use **Staff directory → Remove**. The confirmation window requires exactly `Remove FirstName LastName` and then `Confirm`, including capitalization and spacing. The server checks the phrases against the current stored name. Removal sets Active to false; IDs, meeting/training/request history, notes, and open bookings remain. The window lists open meetings and training involving the employee (including trainer assignments). To restore them, choose Staff directory → All → Edit → Active employee. Active staff must use the removal window instead of an unchecked Active field.
 
