@@ -5,12 +5,15 @@ import assert from 'node:assert/strict';
 import {parseEmployees} from '../src/importCsv.ts';
 test('CSV accepts quoted names, BOM, CRLF; rejects malformed or partial files',()=>{
  assert.deepEqual(parseEmployees('\uFEFFFirst Name,Last Name,Department,Active\r\n"Alex, A.","O""Brien",foh,\r\n'),[{first_name:'Alex, A.',last_name:'O"Brien',department:'FOH',active:true}]);
+ assert.equal(parseEmployees('First Name,Last Name,Position,Active\nKitchen,Example,HOH,Yes')[0].department,'BOH');
+ assert.throws(()=>parseEmployees('First Name,Last Name,Position,Active\nManager,Example,SHL,Yes'),/SHLs/);
+ assert.equal(parseEmployees('First Name,Last Name,Department,Active\nCat,Example,catering,Yes')[0].department,'Catering');
  assert.equal(parseEmployees('Active,Department,Last Name,First Name\nno,BOH,Smith,Jane')[0].active,false);
  for(const csv of ['First Name,Last Name,Department,Active\nA,B,BAR,Yes','First Name,Last Name,Department,Active\n"unfinished','First Name,Last Name,Department,Active\nA,B,FOH,maybe','First Name,Last Name,Department,Active\nA,B,FOH,Yes,extra','First Name,First Name,Department,Active\nA,B,FOH,Yes'])assert.throws(()=>parseEmployees(csv));
 });
 test('admin permissions, stale roles, GM transfer, atomic/idempotent imports, permanent collisions',async()=>{
  const db=new PGlite();await db.exec(`create role anon;create role authenticated;create schema auth;create table auth.users(id uuid primary key);create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('request.jwt.claim.sub',true),'')::uuid$$;grant usage on schema auth to authenticated;grant execute on function auth.uid() to authenticated;`);
- for(const name of ['001_tracker','002_admin_import','003_admin_bootstrap'])await db.exec(await readFile(new URL(`../supabase/migrations/${name}.sql`,import.meta.url),'utf8'));
+ for(const name of ['001_tracker','002_admin_import','003_admin_bootstrap','004_training','005_catering'])await db.exec(await readFile(new URL(`../supabase/migrations/${name}.sql`,import.meta.url),'utf8'));
  const a='00000000-0000-0000-0000-000000000001',b='00000000-0000-0000-0000-000000000002',c='00000000-0000-0000-0000-000000000003';
  await db.exec(`insert into auth.users values('${a}'),('${b}'),('${c}');insert into manager_profiles(id,name,is_gm,is_admin) values('${a}','Admin',false,true);`);
  assert.equal((await db.query('select count(*)::int as n from manager_profiles where is_gm')).rows[0].n,0);
@@ -38,5 +41,10 @@ test('admin permissions, stale roles, GM transfer, atomic/idempotent imports, pe
  assert.deepEqual((await db.query("select id from staff where lower(first_name)='pat' order by id")).rows.map(r=>r.id).sort(),['Pat.L','pat.Li','PAT.Li2'].sort());
  await as(a,"update staff set first_name='Renamed',department='BOH',active=false where id='Isaac.L'");
  assert.equal((await db.query("select id from staff where first_name='Renamed'")).rows[0].id,'Isaac.L');
+ await as(a,"update staff set department='Catering' where id='Isaac.L'");
+ assert.equal((await db.query("select department from staff where id='Isaac.L'")).rows[0].department,'Catering');
+ const catering=await as(a,'select admin_import_staff(gen_random_uuid(),$1) as result',[JSON.stringify([{first_name:'Catering',last_name:'Employee',department:'Catering',active:true}])]);
+ assert.equal(catering.rows[0].result.added,1);
+ await assert.rejects(as(a,"insert into staff(first_name,last_name,department) values('Invalid','Department','Other')"),/check/);
  await db.close();
 });
