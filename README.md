@@ -1,3 +1,5 @@
+> **Workspace upgrade:** The distinct Employee/Manager/IT workspaces and migrations 011–015 are documented in [WORKSPACE-UPGRADE.md](WORKSPACE-UPGRADE.md). Use that versioned installation sequence for the complete upgrade. Live activation, verified email delivery, and the pilot remain required.
+
 # DG Mission Meetings
 
 Deployment repository: https://github.com/mission-dg/shift. The local folder may retain its original name; its Git remote determines the destination.

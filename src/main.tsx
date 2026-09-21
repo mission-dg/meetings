@@ -1,3 +1,4 @@
+import './style.css';
 import {WorkspaceRoot} from './WorkspaceRoot';
 import {EmployeeJobFields} from './EmployeeJobFields';
 import {RemoveEmployeeFields} from './RemoveEmployeeFields';
@@ -11,7 +12,7 @@ import type {Session} from '@supabase/supabase-js';
 import {CalendarDays,LayoutDashboard,Users,MessageSquare,LogOut,Plus,ArrowUpRight,ChevronRight,Check,ShieldCheck,X,Search,Clock3,RefreshCw,LockKeyhole} from 'lucide-react';
 import {configured,supabase} from './client';
 import {type Data,type Employee,type Meeting,type Training,type Note,emptyData,labels,today,displayTime,zone} from './domain';
-import './style.css';
+
 import {MeetingCalendar} from './MeetingCalendar';
 import {AdminPanel} from './AdminPanel';
 type View='trainingProgress'|'home'|'meetings'|'staff'|'requests'|'admin';

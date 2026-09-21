@@ -1,3 +1,5 @@
+> **Workspace upgrade:** The distinct Employee/Manager/IT workspaces and migrations 011–015 are documented in [WORKSPACE-UPGRADE.md](WORKSPACE-UPGRADE.md). Use that versioned installation sequence for the complete upgrade. Live activation, verified email delivery, and the pilot remain required.
+
 # Scheduler release 0.2 — installation and verification
 
 This package upgrades the existing Mission Meetings project after migrations 001–008. It preserves permanent IDs and all meetings, notes, requests, training, and qualifications. Do not rerun the initial migrations or reseed the roster.

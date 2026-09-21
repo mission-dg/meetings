@@ -3,8 +3,8 @@ import type {ScheduleRequest} from './scheduler.ts';
 export const weekdays=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 export type AvailabilityDays=number[][][];
 export function approvedAvailability(requests:ScheduleRequest[],person:string,date:string){
- return requests.filter(q=>q.kind==='Availability'&&q.person_id===person&&q.status==='Approved'&&q.payload.effective!<=date)
-  .sort((a,b)=>b.payload.effective!.localeCompare(a.payload.effective!)||(b.created_at||'').localeCompare(a.created_at||'')||b.id.localeCompare(a.id))[0];
+ return requests.filter(q=>q.kind==='Availability'&&q.person_id===person&&q.status==='Approved'&&q.payload.effective!<=date&&(!q.payload.until||q.payload.until>=date))
+  .sort((a,b)=>Number(!!b.payload.until)-Number(!!a.payload.until)||b.payload.effective!.localeCompare(a.payload.effective!)||(b.created_at||'').localeCompare(a.created_at||'')||b.id.localeCompare(a.id))[0];
 }
 export function upcomingAvailability(requests:ScheduleRequest[],person:string,date:string){
  const dates=[...new Set(requests.filter(q=>q.kind==='Availability'&&q.person_id===person&&q.status==='Approved'&&q.payload.effective!>date).map(q=>q.payload.effective!))].sort();
