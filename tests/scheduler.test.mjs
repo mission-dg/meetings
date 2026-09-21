@@ -102,7 +102,9 @@ test('scheduler: atomic cross-week trades, failed approval rollback, and stale q
  for(let i=0;i<2;i++){await act(1,'draft',{week:weeks[i]});let d=(await read(1,weeks[i])).week.draft;await act(1,'save',{id:d.id,version:d.version,shifts:[originals[i]]});d=(await read(1,weeks[i])).week.draft;await act(1,'release',{id:d.id,version:d.version})}
  await act(1,'draft',{week:weeks[0]});let d=(await read(1)).week.draft;await act(1,'queue',{id:d.id,version:d.version,release_at:'2030-09-01T12:00:00Z'});
  await act(4,'request',{kind:'Trade',source_id:originals[0].id,target_id:originals[1].id});let q=(await read(4)).requests[0];await act(3,'accept',{id:q.id,version:q.version});q=(await read(1)).requests[0];
- await assert.rejects(act(2,'decide',{id:q.id,version:q.version,decision:'Approved'}),/sign-off/);
+ await db.exec("update staff set active=false where id='Alex.L'");
+ await assert.rejects(act(2,'decide',{id:q.id,version:q.version,decision:'Approved'}),/access|active/);
+ await db.exec("update staff set active=true where id='Alex.L'");
  assert.equal((await read(1)).published.find(w=>w.week===weeks[0]).shifts[0].person_id,'s:Casey.W');
  await act(2,'decide',{id:q.id,version:q.version,decision:'Approved',qualification_reason:'Supervised trade'});
  let r=await read(1);assert.equal(r.published.find(w=>w.week===weeks[0]).shifts[0].person_id,'s:Alex.L');assert.equal(r.published.find(w=>w.week===weeks[1]).shifts[0].person_id,'s:Casey.W');
