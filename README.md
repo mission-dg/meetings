@@ -1,5 +1,7 @@
 # DG Mission Meetings
 
+Deployment repository: https://github.com/mission-dg/meetings. The local folder may retain its original name; its Git remote determines the destination.
+
 Private manager workspace. React + TypeScript + Vite frontend; Supabase Auth and Postgres backend. GitHub Pages hosts only the static application, never staff records or notes.
 
 ## Current status
@@ -18,7 +20,7 @@ Authentication settings:
 
 - Turn **Allow new users to sign up** off.
 - Enable Email authentication and magic-link sign-in.
-- Set Site URL to `https://mission-dg.github.io/DG-Mission-Meetings/`.
+- Set Site URL to `https://mission-dg.github.io/meetings/`.
 - Add exactly that URL to allowed redirect URLs. For local development, also allow `http://localhost:5173/` and `http://127.0.0.1:5173/`.
 - Configure production email delivery before inviting your manager team. Supabase's built-in test email delivery has recipient/rate restrictions.
 
@@ -58,7 +60,7 @@ These two values are intentionally public browser configuration. Data privacy co
 2. In **Settings → Pages**, set **Source → GitHub Actions**.
 3. Open **Actions → Publish website**. Run it manually if needed after enabling Pages or changing repository variables.
 4. Wait for the build and deployment to succeed.
-5. Open the URL reported by that workflow. Expected address: `https://mission-dg.github.io/DG-Mission-Meetings/`.
+5. Open the URL reported by that workflow. Expected address: `https://mission-dg.github.io/meetings/`.
 
 The expected address is not proof of deployment. The workflow's successful deployment is the authoritative result. Until Supabase variables are supplied and the site is rebuilt, it shows the setup screen.
 
