@@ -6,7 +6,7 @@ Private manager workspace. React + TypeScript + Vite frontend; Supabase Auth and
 
 ## Current status
 
-The website and database migration are ready for connection. There is **no live Supabase project configured**. Without configuration, the site displays an honest setup screen and cannot sign in or save. A development-only visual preview contains fictional examples and disables saving; it is not included as a usable route in production.
+Supabase project `jgekdmnfakagmuudywmb` is configured: migrations 001–003 are installed, the account service is deployed, public registration is disabled, and GitHub has the public connection variables. The initial IT Admin is active; the GM has not yet been assigned. End-to-end email sign-in and authenticated workflows still need verification. A development-only visual preview contains fictional examples and disables saving; it is not included as a usable route in production.
 
 Implemented: dashboard, staff directory, scheduling/rescheduling, completed/missed/cancelled outcomes, shared notes, creator-only editing, GM requests and links, six-month labels, database audit history, permanent staff IDs, IT Admin account management, employee CSV imports, and MISSION BBQ-inspired styling. This is a new empty project; no spreadsheet records have been imported. Full historical-entry/correction screens and Calendar integration are follow-up work.
 
@@ -81,7 +81,7 @@ The expected address is not proof of deployment. The workflow's successful deplo
 
 ## Local development and verification
 
-Requires Node 22.12+ or a supported newer version.
+Use Node 24 (the deployment workflow uses Node 24).
 
 ```sh
 npm ci
