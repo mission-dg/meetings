@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   build:
-    if: github.repository == 'mission-dg/shift'
+    if: github.repository == 'mission-stars/shift'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
