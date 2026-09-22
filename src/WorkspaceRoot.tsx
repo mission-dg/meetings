@@ -126,7 +126,7 @@ export function WorkspaceRoot(){
  {view==='training'&&workspace==='employee'&&<SchedulerTraining data={data} act={act} busy={busy} onReload={load} preview={preview} onSchedule={()=>setTraining({})} onEdit={initial=>setTraining({initial,revision:initial.schedule_revision_id===data!.week.draft?.id?initial.schedule_revision_id:undefined})}/>}
  {(['logbook','documents','reports','labor','profile'].includes(view)||workspace==='employee'&&['directory','help'].includes(view))&&<Operations key={workspace+view} page={view} workspace={workspace} data={data} preview={preview}/>}
  {workspace!=='employee'&&['directory','oneOnOnes','staffMeetings','training','gmRequests'].includes(view)&&manage(view)}
- {workspace!=='employee'&&view==='accounts'&&<AccountsHub data={data} act={act} busy={busy} reload={load} preview={preview} shlControls={manage('accounts')}/>} 
+ {workspace!=='employee'&&view==='accounts'&&<AccountsHub data={data} act={act} busy={busy} reload={load} preview={preview} shlControls={manage('accounts')}/>}
  {workspace!=='employee'&&view==='settings'&&<SettingsPage data={data} week={week} preview={preview} reload={load} onPassword={()=>setPassword(true)} go={navigate} training={manage('trainingSettings')} system={<SchedulerAccounts data={data} act={act} busy={busy} reload={load} preview={preview} systemOnly/>}/>}
  {workspace!=='employee'&&view==='help'&&<HelpCenter data={data} go={navigate}/>}
  {personId&&workspace!=='employee'&&!['directory','oneOnOnes','staffMeetings','training','gmRequests'].includes(view)&&manage('person')}
