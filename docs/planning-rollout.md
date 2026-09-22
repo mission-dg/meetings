@@ -22,3 +22,7 @@ The local manager preview was checked for staffing controls and the release ackn
 Scheduled hours are planning estimates, not payroll or legally payable overtime. Training blocks count toward scheduled hours but not position coverage; position coaching remains regular work. Salaried staff are excluded from hourly estimates but count when assigned actual position coverage. Coverage uses exact shift intervals, independently of card Lunch/Dinner grouping.
 
 All configuration, forecasts, review acknowledgments, and audit records are private Supabase data. GitHub contains application code, additive migrations, and fictional tests only. Multi-location isolation is a separate upgrade.
+
+## Staff meetings and 1:1s (migration 032)
+
+Apply 030–032 with the matching interface after the Supabase backup. Staff meetings use the existing private schedule draft and Training assignments, including release reviews, hours calculations, coverage, calendars, and release notifications. During-shift meetings split regular work intervals; cancellation restores them in the draft. Only the creator can cancel/replan a group. Published schedules stay unchanged until release. Replanning is cancellation followed by a new meeting; attendees are an explicit snapshot, not a changing live membership list. Linked coaching and 1:1s must be replanned before splitting their work shifts. Group meetings never create qualification sessions or complete 1:1s. Existing meeting records are displayed as 1:1s without changing their IDs or history.
