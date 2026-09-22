@@ -6,11 +6,11 @@
 @media(max-width:800px){.shell.workspace-manager,.shell.workspace-it{display:block}.shell.workspace-manager>aside,.shell.workspace-it>aside{padding:12px;display:block}.scheduler-shell aside .brand,.scheduler-shell aside .sidebar-bottom{display:none}.scheduler-shell aside nav{display:flex;overflow:auto;max-height:none;gap:4px}.scheduler-shell aside nav button{white-space:nowrap;width:auto}.scheduler-shell aside .workspace-switcher{margin:0 0 10px}}
 
 /* Give identity and permissions independent columns; stack controls on phones. */
-.account-permission-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,280px) auto;gap:16px;align-items:center}
-.account-permission-row>.grow{min-width:0;overflow-wrap:anywhere}
-.account-permission-row>select{width:100%;min-width:0}
-.account-permission-row>button{white-space:nowrap}
-@media(max-width:700px){.account-permission-row{grid-template-columns:minmax(0,1fr);gap:12px}.account-permission-row>button{justify-self:start}}
+.person-row.account-permission-row{display:grid;grid-template-columns:minmax(160px,1fr) minmax(180px,280px) auto;gap:16px;align-items:center}
+.person-row.account-permission-row>.grow{min-width:0;overflow-wrap:anywhere}
+.person-row.account-permission-row>select{width:100%;min-width:0}
+.person-row.account-permission-row>button{white-space:nowrap}
+@media(max-width:1000px){.person-row.account-permission-row{grid-template-columns:minmax(0,1fr);gap:12px}.person-row.account-permission-row>button{justify-self:start}}
 
 nav button .nav-page-indicator{margin-left:auto;flex-shrink:0;opacity:.85}
 
