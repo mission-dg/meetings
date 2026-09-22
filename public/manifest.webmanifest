@@ -1,15 +1,31 @@
 {
- "id":"./",
- "name":"STARS Scheduling",
- "short_name":"STARS Scheduling",
- "description":"Spectacular Teammates Achieving Remarkable Significance. One Team, One Mission.",
- "start_url":"./",
- "scope":"./",
- "display":"standalone",
- "background_color":"#f6f3ec",
- "theme_color":"#171717",
- "icons":[
-  {"src":"icons/stars-192.png","sizes":"192x192","type":"image/png","purpose":"any"},
-  {"src":"icons/stars-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
- ]
+  "id": "./",
+  "name": "STARS Scheduling",
+  "short_name": "STARS Scheduling",
+  "description": "Spectacular Teammates Achieving Remarkable Significance. One Team, One Mission.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f3ec",
+  "theme_color": "#171717",
+  "icons": [
+    {
+      "src": "icons/stars-gold-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/stars-gold-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/stars-gold-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
 }
