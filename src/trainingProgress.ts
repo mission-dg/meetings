@@ -1,4 +1,4 @@
-export type TrainingPosition={id:string;name:string;department?:'FOH'|'BOH'|'Catering';version?:number;target_shifts:number;active:boolean};
+export type TrainingPosition={id:string;name:string;department?:'FOH'|'BOH'|'Catering'|'SHL';version?:number;target_shifts:number;active:boolean};
 type ProgressSession={staff_id:string;training_position_id?:string|null;status:string;scheduled_at:string;shift:number};
 export function trainingProgress(staffId:string,position:TrainingPosition,sessions:ProgressSession[]){
  const rows=sessions.filter(s=>s.staff_id===staffId&&s.training_position_id===position.id);

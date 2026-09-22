@@ -6,7 +6,7 @@ import {parseEmployees} from '../src/importCsv.ts';
 test('CSV accepts quoted names, BOM, CRLF; rejects malformed or partial files',()=>{
  assert.deepEqual(parseEmployees('\uFEFFFirst Name,Last Name,Department,Active\r\n"Alex, A.","O""Brien",foh,\r\n'),[{first_name:'Alex, A.',last_name:'O"Brien',department:'FOH',active:true}]);
  assert.equal(parseEmployees('First Name,Last Name,Position,Active\nKitchen,Example,HOH,Yes')[0].department,'BOH');
- assert.throws(()=>parseEmployees('First Name,Last Name,Position,Active\nManager,Example,SHL,Yes'),/SHLs/);
+ assert.equal(parseEmployees('First Name,Last Name,Position,Active\nManager,Example,SHL,Yes')[0].department,'SHL');
  assert.equal(parseEmployees('First Name,Last Name,Department,Active\nCat,Example,catering,Yes')[0].department,'Catering');
  assert.equal(parseEmployees('Active,Department,Last Name,First Name\nno,BOH,Smith,Jane')[0].active,false);
  for(const csv of ['First Name,Last Name,Department,Active\nA,B,BAR,Yes','First Name,Last Name,Department,Active\n"unfinished','First Name,Last Name,Department,Active\nA,B,FOH,maybe','First Name,Last Name,Department,Active\nA,B,FOH,Yes,extra','First Name,First Name,Department,Active\nA,B,FOH,Yes'])assert.throws(()=>parseEmployees(csv));
