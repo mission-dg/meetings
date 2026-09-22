@@ -34,3 +34,9 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .focus-panel p:not(.eyebrow) {color:#514332;}
 .login-story .eyebrow,.next-shift .eyebrow,.focus-panel .eyebrow,.focus-icon {color:#903b08;}
 .focus-panel {background:var(--brand-tan);border-top-color:var(--brand-orange);}
+
+/* Keep the sign-in story readable on the light tan surface. */
+.login-story .brand small {color:#514332;opacity:1;font-size:12px;letter-spacing:2px;line-height:1.5;}
+.login-story p:not(.eyebrow) {color:#352d23;font-size:18px;line-height:1.65;max-width:440px;}
+.login-story .eyebrow {color:#793308;font-size:12px;letter-spacing:1.6px;}
+.login-story>small {color:#352d23;font-size:14px;line-height:1.6;}
