@@ -26,3 +26,9 @@ All configuration, forecasts, review acknowledgments, and audit records are priv
 ## Staff meetings and 1:1s (migration 032)
 
 Apply 030–032 with the matching interface after the Supabase backup. Staff meetings use the existing private schedule draft and Training assignments, including release reviews, hours calculations, coverage, calendars, and release notifications. During-shift meetings split regular work intervals; cancellation restores them in the draft. Only the creator can cancel/replan a group. Published schedules stay unchanged until release. Replanning is cancellation followed by a new meeting; attendees are an explicit snapshot, not a changing live membership list. Linked coaching and 1:1s must be replanned before splitting their work shifts. Group meetings never create qualification sessions or complete 1:1s. Existing meeting records are displayed as 1:1s without changing their IDs or history.
+
+## Store sign-in (migration 033)
+
+Install 033 with the matching login UI. The public location list is stored in Supabase, using the previously reviewed public location directory; listing a store does not enable it. Only Downers Grove is accepted by this backend and all existing accounts remain scoped to that pilot. Multi-store membership and isolation must be implemented before any additional store is enabled.
+
+Remember Me is opt-in local storage for state, store code, and username only. Authentication uses tab-session storage rather than long-term local storage; previous persistent Supabase tokens are removed on startup, so users may need to sign in again after this update. Passwords are never saved by the application. Passwordless email sign-in is removed; email password recovery remains supported. Existing invitation/recovery handling remains intact.
