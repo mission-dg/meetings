@@ -1,0 +1,22 @@
+/* Brand palette observed on mission-bbq.com: orange #e87722, black and white.
+   Status colors remain semantic; they do not define a workspace theme. */
+:root {--brand-orange:#e87722;--brand-black:#171717;--brand-paper:#f6f3ec;--brand-ink:#282521;--orange:var(--brand-orange);--green:var(--brand-black);--line:#e4ddd3;color:var(--brand-ink);background:var(--brand-paper);}
+body {color:var(--brand-ink);background:var(--brand-paper);}
+button {color:var(--brand-ink);}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible {outline-color:var(--brand-orange);}
+.shell.workspace-manager>aside,.shell.workspace-it>aside {background:var(--brand-black);border-right:3px solid var(--brand-orange);}
+.shell aside nav button.selected,.workspace-it aside nav button.selected {background:var(--brand-orange);color:#171717;}
+.shell aside nav button:hover {background:#333;color:#fff;}
+.shell aside nav button.selected:hover {background:#f18c42;color:#171717;}
+.brand-icon {background:var(--brand-orange);color:#171717;}
+.primary,.workspace-it .primary {background:var(--brand-orange);border-color:var(--brand-orange);color:#171717;}
+.primary:hover,.workspace-it .primary:hover {background:#f18c42;border-color:#f18c42;color:#171717;}
+.workspace-it .topbar,.workspace-manager .topbar,.workspace-employee .topbar {border-bottom:3px solid var(--brand-orange);}
+.shell main .profile-tabs button[aria-current="page"] {background:var(--brand-orange);border-color:var(--brand-orange);color:#171717;}
+.employee-navigation .selected {color:#8f3b08;background:#fff0e3;}
+.system-heading {border-left-color:var(--brand-orange);background:#fff0e3;color:var(--brand-ink);}
+.next-shift {background:var(--brand-black);border-top:4px solid var(--brand-orange);}
+.next-shift .eyebrow {color:var(--brand-orange);}
+.next-shift button {background:var(--brand-orange);color:#171717;}
+.login-story {background:var(--brand-black);}
+.login-story .eyebrow {color:var(--brand-orange);}
