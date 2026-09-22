@@ -20,3 +20,11 @@ test('labor uses effective rates, actual elapsed hours and explicit missing rate
 test('calendar escapes content and folds UTF-8 lines without fabricating end times',()=>{
  const text=calendarText([{uid:'meeting-123',title:'Training, prep; '+ '🍖'.repeat(40)+'\nEND:VEVENT',start:'2030-01-01T18:00:00Z',updated:'2030-01-01T17:00:00Z',status:'CONFIRMED',sequence:2}]);assert.ok(!text.includes('DTEND:'));assert.ok(text.includes('SUMMARY:Training\\, prep\\;'));assert.equal(text.split('\r\n').filter(x=>x==='END:VEVENT').length,1);for(const line of text.split('\r\n'))assert.ok(Buffer.byteLength(line)<=75);
 });
+
+test('calendar repairs title separators while preserving names and stable event identity',()=>{
+ const base={uid:'shift-123',start:'2030-01-01T18:00:00Z',updated:'2030-01-01T17:00:00Z',status:'CONFIRMED',sequence:2};
+ for(const title of ['Work · GSR','Work Â· GSR']){
+  const text=calendarText([{...base,title}]);assert.ok(text.includes('SUMMARY:Work - GSR\r\n'));assert.ok(text.includes('UID:shift-123@shift.mission-dg\r\n'));assert.ok(text.includes('SEQUENCE:3\r\n'));
+ }
+ assert.ok(calendarText([{...base,title:'José · Training'}]).includes('SUMMARY:José - Training'));
+});
