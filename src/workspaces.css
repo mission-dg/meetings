@@ -25,3 +25,19 @@ nav button .nav-page-indicator{margin-left:auto;flex-shrink:0;opacity:.85}
 @media screen and (max-width:1100px){.workspace-employee .schedule-content .day-schedule{grid-template-columns:1fr;overflow:visible}.workspace-employee .schedule-content .schedule-day{border-right:0;border-bottom:2px solid #d3c8b6}}
 
 .hours-breakdown{font-size:11px;margin:15px 0;padding:10px 0;border-top:1px solid #ded7c9}.hours-breakdown>div{display:flex;justify-content:space-between;gap:10px;margin:4px 0}.hours-breakdown dd{margin:0;font-variant-numeric:tabular-nums}.hours-breakdown>div:first-child{font-weight:700}.weekly-hours>.hours-breakdown{display:flex;flex-wrap:wrap;gap:12px 28px}.training-hours-tag{background:#eee6f7;border-radius:4px;padding:4px;color:#62417f!important}.meeting-shift-note{background:#e7eef8;padding:5px;border-radius:4px;color:#335774}.meeting-due{color:#985218;background:#fff1d9;padding:5px;border-radius:4px}
+
+/* Home-screen app chrome and installation help. */
+.install-app{margin:24px 0;color:var(--muted,#756958);font-size:14px;line-height:1.6}
+.install-app summary{cursor:pointer;font-weight:700;color:#193b35;padding:12px 0}
+.install-app p{font-size:14px}.install-app button{min-height:44px}
+.workspace-heading>strong{overflow-wrap:anywhere}
+@media(max-width:720px){
+ .login-form{padding-top:28px}.login-story .brand{font-size:16px}
+ .scheduler-shell .topbar{padding-top:max(15px,env(safe-area-inset-top))}
+ .workspace-employee .content{padding-bottom:calc(100px + env(safe-area-inset-bottom))}
+ .login-form input,.scheduler-shell input,.scheduler-shell select,.scheduler-shell textarea{font-size:16px}
+ .login-story{padding-top:max(24px,env(safe-area-inset-top))}
+}
+@media print{.install-app{display:none}}
+
+.mobile-stars-tagline{display:none}@media(max-width:720px){.mobile-stars-tagline{display:block;font-size:14px;line-height:1.6;color:#756958}}
