@@ -8,7 +8,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .shell aside nav button.selected,.workspace-it aside nav button.selected {background:var(--brand-orange);color:#171717;}
 .shell aside nav button:hover {background:#d7bd96;color:var(--brand-ink);}
 .shell aside nav button.selected:hover {background:#f18c42;color:#171717;}
-.brand-icon {background:var(--brand-orange);color:#171717;}
+.brand-icon {width:40px;height:40px;flex-shrink:0;object-fit:contain;background:transparent;border-radius:0;padding:0;}
 .primary,.workspace-it .primary {background:var(--brand-orange);border-color:var(--brand-orange);color:#171717;}
 .primary:hover,.workspace-it .primary:hover {background:#f18c42;border-color:#f18c42;color:#171717;}
 .workspace-it .topbar,.workspace-manager .topbar,.workspace-employee .topbar {border-bottom:3px solid var(--brand-orange);}
