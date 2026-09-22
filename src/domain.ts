@@ -16,3 +16,6 @@ export function displayTime(value:string){return new Intl.DateTimeFormat('en-US'
 export const positionName=(value?:string)=>value==='BOH'?'HOH':value||'';
 
 export const primaryJobName=(employee:Employee,positions:TrainingPosition[])=>positions.find(p=>p.id===employee.primary_job_id)?.name||'Primary job not assigned';
+
+export function directoryPositionLabel(category?:string,job?:string){const group=positionName(category),primary=job||'Primary job not assigned';return group===primary&&group!=='sSHL'?group:[group,primary].filter(Boolean).join(' • ')}
+export function staffDirectoryPosition(employee:Employee,data:Data){const codes=data.trainingSignoffs.filter(s=>s.staff_id===employee.id&&s.active).map(s=>data.trainingPositions.find(j=>j.id===s.training_position_id)?.name);const manager=data.profiles.find(m=>m.active&&m.linked_staff_id===employee.id);const code=codes.includes('sSHL')?'sSHL':codes.includes('hSHL')?'hSHL':manager?.employment_type==='Salaried'?'sSHL':manager?.employment_type==='Hourly'?'hSHL':null;return directoryPositionLabel(code||employee.department,code==='sSHL'?'sSHL':primaryJobName(employee,data.trainingPositions))}
