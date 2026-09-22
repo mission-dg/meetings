@@ -1,7 +1,7 @@
 import {zone,today,type Training} from './domain.ts';
 import type {TrainingPosition,TrainingSignoff} from './trainingProgress.ts';
 export type Person={employment_type?:'Hourly'|'Salaried'|'Unclassified';manager_version?:number;id:string;staff_id?:string;name:string;group:string;active:boolean;on_roster:boolean;is_trainer:boolean;trainer_job_ids?:string[];primary_job_id?:string;is_ca?:boolean;version?:number};
-export type WorkShift={assignment_type?:'regular'|'opening_office'|'closing_office'|'training';activity_title?:string;id:string;person_id:string;start:string;end:string;slot:number;job_id:string|null;qualification_reason?:string};
+export type WorkShift={assignment_type?:'regular'|'opening_office'|'closing_office'|'training';activity_title?:string;notes?:string;id:string;person_id:string;start:string;end:string;slot:number;job_id:string|null;qualification_reason?:string};
 export type Revision={id:string;state:'Draft'|'Queued'|'Published'|'Attention';version:number;shifts:WorkShift[];base_id:string|null;release_at:string|null;release_name:string;error:string|null};
 export type ScheduleRequest={id:string;kind:string;person_id:string;created_by:string;status:string;version:number;reason?:string;response?:string;claimed_by?:string;created_at?:string;decided_at?:string;decided_name?:string;payload:{start?:string;end?:string;effective?:string;until?:string|null;category?:'PTO'|'RTO';paid_hours?:number|null;request_id?:string;request_version?:number;days?:number[][][];source?:WorkShift;target?:WorkShift;recipient?:string}};
 export type Announcement={id:string;title:string;body:string;groups:string[];active:boolean;version:number;created_by:string;author:string;created_at:string;read:boolean};
@@ -18,7 +18,7 @@ export function localCandidates(local:string){if(!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2
 export function centralInstant(local:string,occurrence=''){const candidates=localCandidates(local);if(!candidates.length)throw Error('That Central time does not exist. Choose another time.');if(candidates.length>1&&!['earlier','later'].includes(occurrence))throw Error('This time occurs twice when daylight saving ends. Choose the first or second occurrence.');return candidates[occurrence==='later'?candidates.length-1:0]}
 export function clockTime(iso:string){return new Intl.DateTimeFormat('en-US',{timeZone:zone,hour:'numeric',minute:'2-digit'}).format(new Date(iso))}
 export function hours(shifts:WorkShift[]){return Math.round(shifts.reduce((n,s)=>n+(Date.parse(s.end)-Date.parse(s.start))/3600000,0)*100)/100}
-export function scheduleChanges(before:WorkShift[],after:WorkShift[]){return {added:after.filter(s=>!before.some(p=>p.id===s.id)),changed:after.filter(s=>before.some(p=>p.id===s.id&&['person_id','start','end','slot','job_id','assignment_type','activity_title','qualification_reason'].some(k=>p[k as keyof WorkShift]!==s[k as keyof WorkShift]))),removed:before.filter(s=>!after.some(p=>p.id===s.id))}}
+export function scheduleChanges(before:WorkShift[],after:WorkShift[]){return {added:after.filter(s=>!before.some(p=>p.id===s.id)),changed:after.filter(s=>before.some(p=>p.id===s.id&&['person_id','start','end','slot','job_id','assignment_type','activity_title','notes','qualification_reason'].some(k=>p[k as keyof WorkShift]!==s[k as keyof WorkShift]))),removed:before.filter(s=>!after.some(p=>p.id===s.id))}}
 
 // A trainer must be assigned to this job and cover the work interval. Merely
 // having a trainer elsewhere on the roster must not hide the reminder.

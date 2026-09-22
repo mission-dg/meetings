@@ -6,11 +6,11 @@
 @media(max-width:800px){.shell.workspace-manager,.shell.workspace-it{display:block}.shell.workspace-manager>aside,.shell.workspace-it>aside{padding:12px;display:block}.scheduler-shell aside .brand,.scheduler-shell aside .sidebar-bottom{display:none}.scheduler-shell aside nav{display:flex;overflow:auto;max-height:none;gap:4px}.scheduler-shell aside nav button{white-space:nowrap;width:auto}.scheduler-shell aside .workspace-switcher{margin:0 0 10px}}
 
 /* Give identity and permissions independent columns; stack controls on phones. */
-.account-permission-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,280px) auto;gap:16px;align-items:center}
-.account-permission-row>.grow{min-width:0;overflow-wrap:anywhere}
-.account-permission-row>select{width:100%;min-width:0}
-.account-permission-row>button{white-space:nowrap}
-@media(max-width:700px){.account-permission-row{grid-template-columns:minmax(0,1fr);gap:12px}.account-permission-row>button{justify-self:start}}
+.person-row.account-permission-row{display:grid;grid-template-columns:minmax(160px,1fr) minmax(180px,280px) auto;gap:16px;align-items:center}
+.person-row.account-permission-row>.grow{min-width:0;overflow-wrap:anywhere}
+.person-row.account-permission-row>select{width:100%;min-width:0}
+.person-row.account-permission-row>button{white-space:nowrap}
+@media(max-width:1000px){.person-row.account-permission-row{grid-template-columns:minmax(0,1fr);gap:12px}.person-row.account-permission-row>button{justify-self:start}}
 
 nav button .nav-page-indicator{margin-left:auto;flex-shrink:0;opacity:.85}
 
@@ -25,3 +25,49 @@ nav button .nav-page-indicator{margin-left:auto;flex-shrink:0;opacity:.85}
 @media screen and (max-width:1100px){.workspace-employee .schedule-content .day-schedule{grid-template-columns:1fr;overflow:visible}.workspace-employee .schedule-content .schedule-day{border-right:0;border-bottom:2px solid #d3c8b6}}
 
 .hours-breakdown{font-size:11px;margin:15px 0;padding:10px 0;border-top:1px solid #ded7c9}.hours-breakdown>div{display:flex;justify-content:space-between;gap:10px;margin:4px 0}.hours-breakdown dd{margin:0;font-variant-numeric:tabular-nums}.hours-breakdown>div:first-child{font-weight:700}.weekly-hours>.hours-breakdown{display:flex;flex-wrap:wrap;gap:12px 28px}.training-hours-tag{background:#eee6f7;border-radius:4px;padding:4px;color:#62417f!important}.meeting-shift-note{background:#e7eef8;padding:5px;border-radius:4px;color:#335774}.meeting-due{color:#985218;background:#fff1d9;padding:5px;border-radius:4px}
+
+/* Home-screen app chrome and installation help. */
+.install-app{margin:24px 0;color:var(--muted,#756958);font-size:14px;line-height:1.6}
+.install-app summary{cursor:pointer;font-weight:700;color:#193b35;padding:12px 0}
+.install-app p{font-size:14px}.install-app button{min-height:44px}
+.workspace-heading>strong{overflow-wrap:anywhere}
+@media(max-width:720px){
+ .login-form{padding-top:28px}.login-story .brand{font-size:16px}
+ .scheduler-shell .topbar{padding-top:max(15px,env(safe-area-inset-top))}
+ .workspace-employee .content{padding-bottom:calc(100px + env(safe-area-inset-bottom))}
+ .login-form input,.scheduler-shell input,.scheduler-shell select,.scheduler-shell textarea{font-size:16px}
+ .login-story{padding-top:max(24px,env(safe-area-inset-top))}
+}
+@media print{.install-app{display:none}}
+
+.mobile-stars-tagline{display:none}@media(max-width:720px){.mobile-stars-tagline{display:block;font-size:14px;line-height:1.6;color:#756958}}
+
+.planning-summary{padding:20px;line-height:1.6}.planning-summary details{padding:10px;border-top:1px solid #ddd}.planning-summary summary{cursor:pointer;font-weight:700}.coverage-gap summary{color:#9a441d}.coverage-ok summary{color:#305d46}.ot-flag{color:#9b2c17;font-weight:700}.approaching-ot{color:#805614;font-weight:700}.coverage-job-inputs{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}.coverage-band{border:1px solid #ddd;padding:12px;margin:14px 0}.shift-trade-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.shift-trade-actions button{font-size:12px;min-height:44px}.planning-summary p{overflow-wrap:anywhere}@media print{.shift-trade-actions{display:none}}
+/* Shared management navigation and person profiles */
+.nav-group {display:flex;flex-direction:column;gap:3px;margin-bottom:18px;}
+.nav-group h2 {font-family:inherit;font-size:.72rem;text-transform:uppercase;letter-spacing:.12em;color:#d2c5b4;margin:14px 10px 6px;}
+.person-link {background:transparent;border:0;padding:4px 0;text-align:left;font-weight:700;text-decoration:underline;text-underline-offset:3px;color:inherit;}
+.profile-tabs,.help-topics {display:flex;flex-wrap:wrap;gap:8px;margin:16px 0;}
+.profile-tabs button[aria-current="page"] {background:#315b59;color:white;}
+.person-profile .overlay {justify-content:flex-end;}
+.person-profile .modal {max-height:100dvh;width:min(680px,100%);border-radius:18px 0 0 18px;overflow:auto;}
+.person-profile.full-profile .modal {width:min(1150px,100%);}
+.person-profile .scheduler-card {padding:16px;}
+.management-page>.actions {margin-bottom:18px;}
+.management-menu {display:none;}
+.help-center {max-width:1000px;}
+.help-center li {margin:12px 0;line-height:1.6;}
+.help-center input {width:100%;}
+@media(max-width:900px){
+ .management-menu {display:inline-flex;}
+ .scheduler-shell:not(.workspace-employee)>aside {display:none;}
+ .scheduler-shell.menu-open:not(.workspace-employee)>aside {display:flex;position:fixed;inset:70px auto 0 0;width:min(320px,90vw);z-index:80;overflow-y:auto;}
+ .person-profile .modal {width:100%;max-height:100dvh;border-radius:0;}
+ .profile-tabs {gap:6px;}
+ .profile-tabs button {flex:1 1 135px;}
+}
+.shell main .profile-tabs {flex-direction:row;gap:8px;}
+.shell main .profile-tabs button {background:#fff;color:#2c2925;border:1px solid #d9ded7;flex:0 1 auto;}
+.shell main .profile-tabs button:hover {background:#eee9df;color:#2c2925;}
+.shell main .profile-tabs button[aria-current="page"] {background:#315b59;color:#fff;border-color:#315b59;}
+@media(max-width:900px){.scheduler-shell:not(.workspace-employee) main {margin-left:0;min-width:0;}.shell main .profile-tabs button {flex:1 1 140px;}}

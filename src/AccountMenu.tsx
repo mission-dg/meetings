@@ -1,0 +1,3 @@
+export function AccountMenu({name,onPassword,disabled=false}:{name:string;onPassword:()=>void;disabled?:boolean}){
+ return <details className="account-menu" onKeyDown={e=>{if(e.key==='Escape'){e.currentTarget.open=false;e.currentTarget.querySelector('summary')?.focus()}}} onBlur={e=>{if(!e.currentTarget.contains(e.relatedTarget as Node|null))e.currentTarget.open=false}}><summary aria-label={`Account settings for ${name}`}>{name}<span aria-hidden="true">⌄</span></summary><div><button disabled={disabled} onClick={e=>{const menu=e.currentTarget.closest('details');if(menu)menu.open=false;onPassword()}}>Change password</button></div></details>
+}
