@@ -71,3 +71,18 @@ nav button .nav-page-indicator{margin-left:auto;flex-shrink:0;opacity:.85}
 .shell main .profile-tabs button:hover {background:#eee9df;color:#2c2925;}
 .shell main .profile-tabs button[aria-current="page"] {background:#315b59;color:#fff;border-color:#315b59;}
 @media(max-width:900px){.scheduler-shell:not(.workspace-employee) main {margin-left:0;min-width:0;}.shell main .profile-tabs button {flex:1 1 140px;}}
+
+/* Collapsible navigation keeps every destination reachable at normal zoom. */
+.scheduler-shell:not(.workspace-employee)>aside {max-height:100dvh;overflow-y:auto;}
+.scheduler-shell aside>nav {display:block;flex:1 1 auto;min-height:100px;max-height:none;overflow-y:auto;overscroll-behavior:contain;padding:4px;}
+.scheduler-shell aside>.brand,.scheduler-shell aside>.workspace-switcher,.scheduler-shell aside>.sidebar-bottom {flex-shrink:0;}
+.scheduler-shell aside .nav-group {margin-bottom:6px;}
+.scheduler-shell aside .nav-group h2 {margin:0;font:inherit;}
+.scheduler-shell aside nav button {width:100%;white-space:normal;text-align:left;}
+.scheduler-shell aside nav .nav-group-toggle {min-height:44px;justify-content:space-between;font-size:.75rem;text-transform:uppercase;letter-spacing:.1em;font-weight:750;}
+.nav-group-toggle span {font-size:1rem;}
+.nav-group-links:not([hidden]) {display:grid;gap:3px;padding-left:8px;}
+@media(max-width:900px){
+ .scheduler-shell.menu-open:not(.workspace-employee)>aside {max-height:calc(100dvh - 70px);}
+ .scheduler-shell.menu-open aside .sidebar-bottom {display:block;margin-top:12px;}
+}
