@@ -43,3 +43,31 @@ nav button .nav-page-indicator{margin-left:auto;flex-shrink:0;opacity:.85}
 .mobile-stars-tagline{display:none}@media(max-width:720px){.mobile-stars-tagline{display:block;font-size:14px;line-height:1.6;color:#756958}}
 
 .planning-summary{padding:20px;line-height:1.6}.planning-summary details{padding:10px;border-top:1px solid #ddd}.planning-summary summary{cursor:pointer;font-weight:700}.coverage-gap summary{color:#9a441d}.coverage-ok summary{color:#305d46}.ot-flag{color:#9b2c17;font-weight:700}.approaching-ot{color:#805614;font-weight:700}.coverage-job-inputs{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}.coverage-band{border:1px solid #ddd;padding:12px;margin:14px 0}.shift-trade-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.shift-trade-actions button{font-size:12px;min-height:44px}.planning-summary p{overflow-wrap:anywhere}@media print{.shift-trade-actions{display:none}}
+/* Shared management navigation and person profiles */
+.nav-group {display:flex;flex-direction:column;gap:3px;margin-bottom:18px;}
+.nav-group h2 {font-family:inherit;font-size:.72rem;text-transform:uppercase;letter-spacing:.12em;color:#d2c5b4;margin:14px 10px 6px;}
+.person-link {background:transparent;border:0;padding:4px 0;text-align:left;font-weight:700;text-decoration:underline;text-underline-offset:3px;color:inherit;}
+.profile-tabs,.help-topics {display:flex;flex-wrap:wrap;gap:8px;margin:16px 0;}
+.profile-tabs button[aria-current="page"] {background:#315b59;color:white;}
+.person-profile .overlay {justify-content:flex-end;}
+.person-profile .modal {max-height:100dvh;width:min(680px,100%);border-radius:18px 0 0 18px;overflow:auto;}
+.person-profile.full-profile .modal {width:min(1150px,100%);}
+.person-profile .scheduler-card {padding:16px;}
+.management-page>.actions {margin-bottom:18px;}
+.management-menu {display:none;}
+.help-center {max-width:1000px;}
+.help-center li {margin:12px 0;line-height:1.6;}
+.help-center input {width:100%;}
+@media(max-width:900px){
+ .management-menu {display:inline-flex;}
+ .scheduler-shell:not(.workspace-employee)>aside {display:none;}
+ .scheduler-shell.menu-open:not(.workspace-employee)>aside {display:flex;position:fixed;inset:70px auto 0 0;width:min(320px,90vw);z-index:80;overflow-y:auto;}
+ .person-profile .modal {width:100%;max-height:100dvh;border-radius:0;}
+ .profile-tabs {gap:6px;}
+ .profile-tabs button {flex:1 1 135px;}
+}
+.shell main .profile-tabs {flex-direction:row;gap:8px;}
+.shell main .profile-tabs button {background:#fff;color:#2c2925;border:1px solid #d9ded7;flex:0 1 auto;}
+.shell main .profile-tabs button:hover {background:#eee9df;color:#2c2925;}
+.shell main .profile-tabs button[aria-current="page"] {background:#315b59;color:#fff;border-color:#315b59;}
+@media(max-width:900px){.scheduler-shell:not(.workspace-employee) main {margin-left:0;min-width:0;}.shell main .profile-tabs button {flex:1 1 140px;}}

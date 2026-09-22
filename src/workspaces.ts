@@ -1,13 +1,20 @@
 import type {Workspace,WorkspaceSession,SchedulerData} from './scheduler.ts';
 export const workspaceLabels:Record<Workspace,string>={employee:'Employee View',manager:'Manager View',it:'IT View'};
+export const managementGroups:[string,[string,string][]][]=[
+ ['Daily work',[['home','Overview'],['schedule','Schedule'],['requests','Approvals'],['availability','Team availability']]],
+ ['People',[['directory','Staff directory'],['training','Training'],['staffMeetings','Staff meetings'],['oneOnOnes','1:1s']]],
+ ['Operations',[['announcements','Announcements'],['logbook','Manager logbook'],['documents','Documents'],['reports','Reports'],['labor','Labor planning']]],
+ ['Administration',[['accounts','Accounts & access'],['audit','Change history'],['settings','Settings']]],
+ ['', [['help','Help']]]
+];
 export const workspacePages:Record<Workspace,[string,string][]>= {
  employee:[['home','Today'],['schedule','Schedule'],['requests','Requests'],['announcements','Updates'],['more','More']],
- manager:[['home','Daily brief'],['schedule','Schedule builder'],['requests','Approvals'],['availability','Team availability'],['training','Training'],['meetings','Meetings & staff'],['logbook','Manager logbook'],['announcements','Announcements'],['directory','Directory'],['documents','Documents'],['reports','Reports'],['labor','Labor planning'],['accounts','Employee accounts']],
- it:[['home','System overview'],['accounts','Accounts & access'],['administration','Staff & permissions'],['directory','Directory'],['audit','Change history'],['help','Settings & help']]
+ manager:managementGroups.flatMap(([,pages])=>pages),it:managementGroups.flatMap(([,pages])=>pages)
 };
+export function canonicalPage(page:string){return ({meetings:'oneOnOnes',administration:'accounts',staff:'directory',trainingProgress:'training',admin:'accounts'} as Record<string,string>)[page]||page}
 export const employeeMore:[string,string][]=[['staffMeetings','Staff meetings'],['availability','My availability'],['training','Training'],['directory','Team directory'],['documents','Documents'],['profile','My profile & calendar'],['help','Help']];
-export function allowedPage(workspace:Workspace,page:string){return [...workspacePages[workspace],...(workspace==='employee'?employeeMore:[])].some(([id])=>id===page)}
-export function chooseWorkspace(session:WorkspaceSession,preferred:string|null):Workspace{return session.views.includes(preferred as Workspace)?preferred as Workspace:session.views[0]}
+export function allowedPage(workspace:Workspace,page:string){return (workspace!=='employee'&&page==='gmRequests')||[...workspacePages[workspace],...(workspace==='employee'?employeeMore:[])].some(([id])=>id===page)}
+export function chooseWorkspace(session:WorkspaceSession,preferred:string|null):Workspace{if(preferred==='manager'&&session.views.includes('it'))return 'it';return session.views.includes(preferred as Workspace)?preferred as Workspace:session.views[0]}
 // Used only by the disconnected demo. Production uses the server's matching projection.
 export function projectDemo(data:SchedulerData,workspace:Workspace):SchedulerData {
  if(workspace!=='employee')return {...data,workspace};

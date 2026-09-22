@@ -1,0 +1,2 @@
+import type {SchedulerData} from './scheduler.ts';
+export function leadershipPerson(data:SchedulerData,id:string){const p=data.people.find(p=>p.id===id);return p?.group==='SHL'||data.accounts.some(a=>a.staff_id===p?.staff_id&&['manager','it','sSHL','hSHL'].includes(a.role||''))||data.signoffs.some(f=>f.staff_id===p?.staff_id&&f.active&&data.jobs.some(j=>j.id===f.training_position_id&&['hSHL','sSHL'].includes(j.name)))}

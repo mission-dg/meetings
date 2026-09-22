@@ -2,16 +2,18 @@ import {useEffect,useRef,useState} from 'react';
 import {supabase} from './client';
 import {displayTime,today} from './domain';
 import {clockTime,shiftDay,type SchedulerData,type ShiftMeeting,type WorkShift} from './scheduler';
-export function ShiftMeetings({data,preview,reload,onBusy}:{data:SchedulerData;preview:boolean;reload:()=>Promise<void>;onBusy:(value:boolean)=>void}){
+export function ShiftMeetings({data,preview,reload,onBusy,initialStaff,initialMeeting}:{initialMeeting?:string;initialStaff?:string;data:SchedulerData;preview:boolean;reload:()=>Promise<void>;onBusy:(value:boolean)=>void}){
  const [scope,setScope]=useState(data.week.draft?'draft':'published');
  const [existing,setExisting]=useState(''),[employeeShift,setEmployeeShift]=useState(''),[managerShift,setManagerShift]=useState(''),[kind,setKind]=useState('Routine'),[request,setRequest]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(''),[message,setMessage]=useState(''),[completed,setCompleted]=useState(today());
  useEffect(()=>{onBusy(busy);return()=>onBusy(false)},[busy,onBusy]);
  const retry=useRef<{key:string;id:string}|null>(null);
  const published=data.published.find(w=>w.week===data.week.start),draft=scope==='draft'?data.week.draft:null,revision=draft||published,shifts=draft?.shifts||published?.shifts||[],revisionId=draft?.id||published?.revision_id;
+ useEffect(()=>{if(initialStaff)setEmployeeShift(shifts.find(s=>s.person_id==='s:'+initialStaff&&s.assignment_type!=='training'&&Date.parse(s.end)>Date.now())?.id||'')},[initialStaff,scope]);
  const chosen=shifts.find(s=>s.id===employeeShift);const person=(s:WorkShift)=>data.people.find(p=>p.id===s.person_id);const selectedManager=[...shifts,...data.published.filter(w=>w.week!==data.week.start).flatMap(w=>w.shifts)].find(s=>s.id===managerShift);const manager=data.meeting_managers?.find(m=>m.person_id===selectedManager?.person_id);
  const employeeCandidates=shifts.filter(s=>s.person_id.startsWith('s:')&&person(s)?.active&&person(s)?.group!=='SHL'&&s.assignment_type!=='training'&&Date.parse(s.end)>Date.now());
  const managerCandidates=[...shifts,...data.published.filter(w=>w.week!==data.week.start).flatMap(w=>w.shifts)].filter(s=>data.meeting_managers?.some(m=>m.person_id===s.person_id)&&s.assignment_type!=='training'&&chosen&&Date.parse(s.start)<Date.parse(chosen.end)&&Date.parse(s.end)>Date.parse(chosen.start)&&Date.parse(s.end)>Date.now());
  const owned=(data.shift_meetings||[]).filter(m=>m.created_by===data.self.id&&m.status==='Scheduled');
+ useEffect(()=>{const m=owned.find(m=>m.id===initialMeeting);if(m){setExisting(m.id);setKind(m.type);if(!m.schedule_revision_id||data.published.some(w=>w.revision_id===m.schedule_revision_id))setScope('published')}},[initialMeeting]);
  const open=(data.shift_meetings||[]).filter(m=>m.status==='Scheduled'&&(shifts.some(s=>s.id===m.work_shift_id)||m.timing_mode==='exact'));
  const optionsLabel=(s:WorkShift)=>`${person(s)?.name||'Former teammate'} · ${shiftDay(s.start)} · ${clockTime(s.start)}–${clockTime(s.end)}`;
  async function save(){setBusy(true);setError('');setMessage('');try{
