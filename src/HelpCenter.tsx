@@ -1,8 +1,8 @@
 import {useState} from 'react';
 import type {SchedulerData} from './scheduler';
 import {guides} from './helpGuides';
-export function HelpCenter({data,go}:{data:SchedulerData;go:(page:string)=>void}){
- const [search,setSearch]=useState('');const initial=new URLSearchParams(location.search).get('article')||sessionStorage.getItem('stars:help-context')||'';
+export function HelpCenter({data,go,context=''}:{data:SchedulerData;go:(page:string)=>void;context?:string}){
+ const [search,setSearch]=useState('');const initial=new URLSearchParams(location.search).get('article')||context||'';
  const [article,setArticle]=useState(guides.some(g=>g.id===initial)?initial:'');
  const available=guides.filter(g=>!g.restricted||data.self.is_admin||data.self.is_gm);
  const found=available.filter(g=>(g.title+' '+g.keywords+' '+g.steps.join(' ')+' '+g.recovery).toLowerCase().includes(search.toLowerCase()));
