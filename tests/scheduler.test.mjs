@@ -11,7 +11,7 @@ test('scheduler: private drafts, scheduled locking, permission boundaries, relea
  await assert.rejects(as(4,'select * from private.schedule_revisions'),/permission denied/);
  await assert.rejects(act(3,'draft',{week:'2030-09-01'}),/Manager/);
  await act(1,'draft',{week:'2030-09-01'});let d=(await read(1)).week.draft;
- await act(1,'save',{id:d.id,version:d.version,shifts:[shift(1)]});
+ await act(1,'save',{id:d.id,version:d.version,shifts:[{...shift(1),notes:"kSHL · Kitchen manager\nCatering: prepare delivery supplies"}]});
  assert.equal((await read(4)).week.draft,null);assert.equal((await read(4)).published.length,0);
  await assert.rejects(act(1,'save',{id:d.id,version:d.version,shifts:[]}),/changed/);
  d=(await read(1)).week.draft;
@@ -20,7 +20,7 @@ test('scheduler: private drafts, scheduled locking, permission boundaries, relea
  await assert.rejects(act(1,'save',{id:d.id,version:d.version,shifts:[]}),/Cancel/);
  await as(4,'select scheduler_read($1)',['2030-09-01']);
  await db.exec(`update private.schedule_revisions set release_at=now()-interval '1 minute';select private.run_schedule_releases();select private.run_schedule_releases();`);
- const employee=await read(4);assert.equal(employee.published.length,1);assert.equal(employee.published[0].shifts[0].qualification_reason,undefined);assert.equal(employee.notifications.length,1);
+ const employee=await read(4);assert.equal(employee.published.length,1);assert.equal(employee.published[0].shifts[0].qualification_reason,undefined);assert.equal(employee.notifications.length,1);assert.equal(employee.published[0].shifts[0].notes,"kSHL · Kitchen manager\nCatering: prepare delivery supplies");
  await assert.rejects(act(4,'announcement',{title:'No',body:'No',groups:[]}),/Manager or CA/);
  await act(3,'announcement',{title:'Training update',body:'Please check your upcoming training.',groups:['FOH']});assert.equal((await read(4)).announcements.length,1);assert.equal((await read(5)).announcements.length,0);
  const announcement=(await read(4)).announcements[0];await act(4,'read',{announcement_id:announcement.id});assert.equal((await read(4)).announcements[0].read,true);
