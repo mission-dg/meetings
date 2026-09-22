@@ -41,3 +41,5 @@ nav button .nav-page-indicator{margin-left:auto;flex-shrink:0;opacity:.85}
 @media print{.install-app{display:none}}
 
 .mobile-stars-tagline{display:none}@media(max-width:720px){.mobile-stars-tagline{display:block;font-size:14px;line-height:1.6;color:#756958}}
+
+.planning-summary{padding:20px;line-height:1.6}.planning-summary details{padding:10px;border-top:1px solid #ddd}.planning-summary summary{cursor:pointer;font-weight:700}.coverage-gap summary{color:#9a441d}.coverage-ok summary{color:#305d46}.ot-flag{color:#9b2c17;font-weight:700}.approaching-ot{color:#805614;font-weight:700}.coverage-job-inputs{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px}.coverage-band{border:1px solid #ddd;padding:12px;margin:14px 0}.shift-trade-actions{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}.shift-trade-actions button{font-size:12px;min-height:44px}.planning-summary p{overflow-wrap:anywhere}@media print{.shift-trade-actions{display:none}}
