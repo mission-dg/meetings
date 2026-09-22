@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {trainingProgress} from '../src/trainingProgress.ts';
+import {trainingProgress,trainingBadge} from '../src/trainingProgress.ts';
 test('training progress counts distinct completed Central-time shifts separately for each position and employee',()=>{
  const position={id:'cashier',name:'Cashier',target_shifts:4,active:true};
  const shift=(date,number=1,extra={})=>({staff_id:'A',training_position_id:'cashier',scheduled_at:date,status:'Completed',shift:number,...extra});
@@ -21,4 +21,16 @@ test('active qualifications fill progress to the job target without inventing se
  assert.equal(trainingProgress('B',job,rows,[qualified]).completed,0);
  assert.equal(trainingProgress('A',{...job,id:'expo'},rows,[qualified]).completed,0);
  assert.equal(trainingProgress('A',{...job,target_shifts:6},rows,[qualified]).completed,6);
+});
+
+test('directory badges show unstarted, scheduled, completed and revoked qualification states independently',()=>{
+ const job={id:'gsr',name:'GSR',target_shifts:4,active:true};
+ const session={staff_id:'A',training_position_id:'gsr',scheduled_at:'2026-09-21T17:00:00Z',status:'Scheduled',shift:1};
+ const signed={id:'q',staff_id:'A',training_position_id:'gsr',active:true,version:1};
+ assert.deepEqual(trainingBadge('A',job,[],[]),{color:'red',text:'GSR: 0/4 Shifts'});
+ assert.deepEqual(trainingBadge('A',job,[session],[]),{color:'blue',text:'GSR: 0/4 Shifts'});
+ assert.deepEqual(trainingBadge('A',job,[{...session,status:'Completed'}],[]),{color:'blue',text:'GSR: 1/4 Shifts'});
+ assert.deepEqual(trainingBadge('A',job,[],[signed]),{color:'teal',text:'GSR: Trained'});
+ assert.deepEqual(trainingBadge('A',job,[{...session,status:'Cancelled'}],[{...signed,active:false}]),{color:'red',text:'GSR: 0/4 Shifts'});
+ assert.deepEqual(trainingBadge('B',job,[session],[signed]),{color:'red',text:'GSR: 0/4 Shifts'});
 });

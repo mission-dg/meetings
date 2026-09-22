@@ -9,3 +9,9 @@ export function trainingProgress(staffId:string,position:TrainingPosition,sessio
 }
 
 export type TrainingSignoff={origin?:'training'|'experience'|'migration';id:string;staff_id:string;training_position_id:string;active:boolean;created_by:string;created_at:string;version:number};
+
+export function trainingBadge(staffId:string,position:TrainingPosition,sessions:ProgressSession[],signoffs:TrainingSignoff[]){
+ const progress=trainingProgress(staffId,position,sessions);
+ const trained=signoffs.some(s=>s.staff_id===staffId&&s.training_position_id===position.id&&s.active);
+ return {color:trained?'teal':progress.scheduled>0||progress.completed>0?'blue':'red',text:`${position.name}: ${trained?'Trained':`${progress.completed}/${progress.target} Shifts`}`};
+}
