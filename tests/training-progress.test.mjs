@@ -11,3 +11,14 @@ test('training progress counts distinct completed Central-time shifts separately
  assert.equal(trainingProgress('A',{...position,target_shifts:5},rows).remaining,1);
  assert.equal(trainingProgress('C',position,rows).started,false);
 });
+test('active qualifications fill progress to the job target without inventing sessions; revocation restores recorded progress',()=>{
+ const job={id:'gsr',name:'GSR',target_shifts:4,active:true};
+ const rows=[{staff_id:'A',training_position_id:'gsr',scheduled_at:'2026-09-21T17:00:00Z',status:'Completed',shift:1}];
+ const qualified={id:'q',staff_id:'A',training_position_id:'gsr',active:true,origin:'experience',created_by:'manager',created_at:'2026-09-21',version:1};
+ for(const origin of ['experience','migration','training']){const progress=trainingProgress('A',job,rows,[{...qualified,origin}]);assert.equal(progress.completed,4);assert.equal(progress.remaining,0)}
+ assert.equal(rows.length,1);
+ assert.equal(trainingProgress('A',job,rows,[{...qualified,active:false}]).completed,1);
+ assert.equal(trainingProgress('B',job,rows,[qualified]).completed,0);
+ assert.equal(trainingProgress('A',{...job,id:'expo'},rows,[qualified]).completed,0);
+ assert.equal(trainingProgress('A',{...job,target_shifts:6},rows,[qualified]).completed,6);
+});
