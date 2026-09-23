@@ -49,8 +49,8 @@ nav button .nav-page-indicator{margin-left:auto;flex-shrink:0;opacity:.85}
 .person-link {background:transparent;border:0;padding:4px 0;text-align:left;font-weight:700;text-decoration:underline;text-underline-offset:3px;color:inherit;}
 .profile-tabs,.help-topics {display:flex;flex-wrap:wrap;gap:8px;margin:16px 0;}
 .profile-tabs button[aria-current="page"] {background:#315b59;color:white;}
-.person-profile .overlay {justify-content:flex-end;}
-.person-profile .modal {max-height:100dvh;width:min(680px,100%);border-radius:18px 0 0 18px;overflow:auto;}
+.person-profile .overlay {justify-content:center;align-items:center;}
+.person-profile .modal {max-height:calc(100dvh - 48px);width:min(680px,100%);border-radius:18px;overflow:auto;}
 .person-profile.full-profile .modal {width:min(1150px,100%);}
 .person-profile .scheduler-card {padding:16px;}
 .management-page>.actions {margin-bottom:18px;}
@@ -62,6 +62,7 @@ nav button .nav-page-indicator{margin-left:auto;flex-shrink:0;opacity:.85}
  .management-menu {display:inline-flex;}
  .scheduler-shell:not(.workspace-employee)>aside {display:none;}
  .scheduler-shell.menu-open:not(.workspace-employee)>aside {display:flex;position:fixed;inset:70px auto 0 0;width:min(320px,90vw);z-index:80;overflow-y:auto;}
+ .person-profile .overlay {padding:0;}
  .person-profile .modal {width:100%;max-height:100dvh;border-radius:0;}
  .profile-tabs {gap:6px;}
  .profile-tabs button {flex:1 1 135px;}
