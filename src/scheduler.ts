@@ -1,6 +1,6 @@
 import {zone,today,type Training} from './domain.ts';
 import type {TrainingPosition,TrainingSignoff} from './trainingProgress.ts';
-export type Person={employment_type?:'Hourly'|'Salaried'|'Unclassified';manager_version?:number;id:string;staff_id?:string;name:string;group:string;active:boolean;on_roster:boolean;is_trainer:boolean;trainer_job_ids?:string[];primary_job_id?:string;is_ca?:boolean;version?:number};
+export type Person={leadership_title?:'GM'|'sSHL'|null;inherited_job_ids?:string[];employment_type?:'Hourly'|'Salaried'|'Unclassified';manager_version?:number;id:string;staff_id?:string;name:string;group:string;active:boolean;on_roster:boolean;is_trainer:boolean;trainer_job_ids?:string[];primary_job_id?:string;is_ca?:boolean;version?:number};
 export type WorkShift={assignment_type?:'regular'|'opening_office'|'closing_office'|'training';activity_title?:string;notes?:string;id:string;person_id:string;start:string;end:string;slot:number;job_id:string|null;qualification_reason?:string};
 export type Revision={id:string;state:'Draft'|'Queued'|'Published'|'Attention';version:number;shifts:WorkShift[];base_id:string|null;release_at:string|null;release_name:string;error:string|null};
 export type ScheduleRequest={id:string;kind:string;person_id:string;created_by:string;status:string;version:number;reason?:string;response?:string;claimed_by?:string;created_at?:string;decided_at?:string;decided_name?:string;payload:{start?:string;end?:string;effective?:string;until?:string|null;category?:'PTO'|'RTO';paid_hours?:number|null;request_id?:string;request_version?:number;days?:number[][][];source?:WorkShift;target?:WorkShift;recipient?:string}};
@@ -28,7 +28,7 @@ export function qualificationWarnings(data:SchedulerData,shifts:WorkShift[]){
  const available=[...shifts,...published.filter(s=>!currentIds.has(s.id)&&shiftDay(s.start)<data.week.start),...published.filter(s=>!currentIds.has(s.id)&&shiftDay(s.start)>=addDays(data.week.start,7))];
  return shifts.flatMap(s=>{
   const person=data.people.find(p=>p.id===s.person_id);
-  if(!s.job_id||!person?.staff_id||data.signoffs.some(f=>f.staff_id===person.staff_id&&f.training_position_id===s.job_id&&f.active))return [];
+  if(!s.job_id||person?.inherited_job_ids?.includes(s.job_id)||!person?.staff_id||data.signoffs.some(f=>f.staff_id===person.staff_id&&f.training_position_id===s.job_id&&f.active))return [];
   const intervals=data.training.filter(t=>t.status==='Scheduled'&&t.work_shift_id===s.id&&t.staff_id===person.staff_id&&t.training_position_id===s.job_id&&t.ends_at&&(!t.schedule_revision_id||t.schedule_revision_id===data.week.draft?.id||data.published.some(w=>w.revision_id===t.schedule_revision_id))).flatMap(t=>{
    const trainer=available.find(x=>x.id===t.trainer_shift_id&&x.person_id==='s:'+t.trainer_id);
    const eligible=data.people.some(p=>p.staff_id===t.trainer_id&&p.active&&p.is_trainer);
