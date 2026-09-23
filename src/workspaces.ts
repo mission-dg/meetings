@@ -12,7 +12,7 @@ export const workspacePages:Record<Workspace,[string,string][]>= {
  manager:managementGroups.flatMap(([,pages])=>pages),it:managementGroups.flatMap(([,pages])=>pages)
 };
 export function canonicalPage(page:string){return ({availability:'requests',meetings:'oneOnOnes',administration:'accounts',staff:'directory',trainingProgress:'training',admin:'accounts'} as Record<string,string>)[page]||page}
-export const employeeMore:[string,string][]=[['staffMeetings','Staff meetings'],['training','Training'],['directory','Team directory'],['documents','Documents'],['profile','My profile & calendar'],['help','Help']];
+export const employeeMore:[string,string][]=[['staffMeetings','Staff meetings'],['training','Training'],['directory','Team directory'],['documents','Documents'],['profile','My profile & calendar'],['settings','Settings'],['help','Help']];
 export function allowedPage(workspace:Workspace,page:string){return (workspace!=='employee'&&page==='gmRequests')||[...workspacePages[workspace],...(workspace==='employee'?employeeMore:[])].some(([id])=>id===page)}
 export function chooseWorkspace(session:WorkspaceSession,preferred:string|null):Workspace{if(preferred==='manager'&&session.views.includes('it'))return 'it';return session.views.includes(preferred as Workspace)?preferred as Workspace:session.views[0]}
 // Used only by the disconnected demo. Production uses the server's matching projection.

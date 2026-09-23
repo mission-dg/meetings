@@ -1,3 +1,6 @@
+import {appearanceColors,defaultAppearance} from './scheduleColors';
+import {useAppearanceTheme} from './useAppearanceTheme';
+import './appearance.css';
 import {isPracticeIsolated} from './practiceIsolation';
 import {Onboarding} from './Onboarding';
 import {createActions,type CreateAction,type ActionContext} from './workflowActions';
@@ -49,6 +52,8 @@ export function WorkspaceRoot(){
  const [helpOpen,setHelpOpen]=useState(false),[meetingStaff,setMeetingStaff]=useState<string|undefined>(),[meetingBooking,setMeetingBooking]=useState<string|undefined>();
  const [personId,setPersonId]=useState<string|undefined>(new URLSearchParams(location.search).get('person')||undefined);
  const [session,setSession]=useState<Session|null>(null),[checking,setChecking]=useState(!preview),[week,setWeek]=useState(new URLSearchParams(location.search).get('week')||weekOf()),[role,setRole]=useState('it'),[workspace,setWorkspace]=useState<Workspace|null>(null),[access,setAccess]=useState<WorkspaceSession|null>(null),[data,setData]=useState<SchedulerData|null>(null),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[view,setView]=useState(canonicalPage(new URLSearchParams(location.search).get('page')||'home')),[menuOpen,setMenuOpen]=useState(false),[password,setPassword]=useState(()=>['recovery','invite'].includes(new URLSearchParams(location.hash.slice(1)).get('type')||'')),[training,setTraining]=useState<{revision?:string;initial?:LinkedTraining;staff?:string;job?:string}|null>(null);
+ useAppearanceTheme(data?.appearance?.mode,session?.user.id||data?.self.id);
+ const previewAppearances=useRef<Record<string,import('./scheduleColors').Appearance>>({});
  const previewRequests=useRef<ScheduleRequest[]>([{id:'demo-approved-hours',kind:'Availability',person_id:'s:Casey.W',created_by:'employee',status:'Approved',version:2,created_at:addDays(today(),-15)+'T12:00:00Z',decided_at:addDays(today(),-14)+'T12:00:00Z',decided_name:'Morgan Hayes',payload:{effective:addDays(today(),-14),days:Array.from({length:7},(_,i)=>i===0?[[690,1200]]:[[660,1260]])}}]);
  const [requestTarget,setRequestTarget]=useState<string|null>(new URLSearchParams(location.search).get('request'));
  const canLeave=useUnsavedChanges();
@@ -58,7 +63,7 @@ export function WorkspaceRoot(){
  const load=useCallback(async()=>{
   if(isPracticeIsolated())return;
   const token=++serial.current;
-  if(preview){const raw=demo(week,role,previewRequests.current),info:WorkspaceSession={id:raw.self.id,name:raw.self.name,person_id:raw.self.person_id,is_ca:raw.self.is_ca,views:role==='it'?['it','manager','employee']:role==='manager'?['manager','employee']:['employee']};const selected=chooseWorkspace(info,workspace);setAccess(info);setWorkspace(selected);setData(projectDemo(raw,selected));return}
+  if(preview){const raw=demo(week,role,previewRequests.current),info:WorkspaceSession={id:raw.self.id,name:raw.self.name,person_id:raw.self.person_id,is_ca:raw.self.is_ca,views:role==='it'?['it','manager','employee']:role==='manager'?['manager','employee']:['employee']};const selected=chooseWorkspace(info,workspace);setAccess(info);setWorkspace(selected);setData(projectDemo({...raw,appearance:previewAppearances.current[raw.self.id]||defaultAppearance(raw.jobs),schedule_colors:appearanceColors(previewAppearances.current[raw.self.id]||defaultAppearance(raw.jobs))},selected));return}
   if(!supabase||!session)return;
   const loginStatus=await supabase.rpc('username_account_status');if(token!==serial.current)return;
   if(loginStatus.error){setData(null);setError('Account check unavailable. Refresh or contact IT.');throw loginStatus.error}
@@ -73,7 +78,8 @@ export function WorkspaceRoot(){
   if(selected!==workspace){setData(null);setMenuOpen(false);setTraining(null)}
   const result=await supabase.rpc('workspace_read',{p_week:week,p_view:selected});if(token!==serial.current)return;
   if(result.error){setData(null);setError(result.error.message);throw result.error}
-  setAccess(info);setWorkspace(selected);setData(result.data as SchedulerData);setError('');try{localStorage.setItem('shift:view:'+info.id,selected)}catch{}
+  const colors=await supabase.rpc('appearance_read');if(token!==serial.current)return;
+  setAccess(info);setWorkspace(selected);setData({...result.data,appearance:colors.error?undefined:colors.data,schedule_colors:colors.error?undefined:appearanceColors(colors.data),schedule_colors_error:colors.error?.message} as SchedulerData);setError('');try{localStorage.setItem('shift:view:'+info.id,selected)}catch{}
  },[session?.user.id,week,workspace,role]);
  useEffect(()=>{if(preview){setChecking(false);return}if(!supabase){setChecking(false);return}supabase.auth.getSession().then(({data})=>{sessionId.current=data.session?.user.id;setSession(data.session);setChecking(false)});const {data:l}=supabase.auth.onAuthStateChange((event,s)=>{if(event==='PASSWORD_RECOVERY')setPassword(true);if(sessionId.current!==s?.user.id){serial.current++;setData(null);setMenuOpen(false);setTraining(null);setError('');setWorkspace(null);setAccess(null);setUsernameStatus(null);pending.current=null}sessionId.current=s?.user.id;setSession(s)});return()=>l.subscription.unsubscribe()},[]);
  useEffect(()=>{if(preview||session)void load().catch(()=>{})},[session?.user.id,load]);
@@ -139,7 +145,7 @@ export function WorkspaceRoot(){
  {(['logbook','documents','reports','labor','profile'].includes(view)||workspace==='employee'&&['directory'].includes(view))&&<Operations key={workspace+view} page={view} workspace={workspace} data={data} preview={preview}/>}
  {workspace!=='employee'&&['directory','oneOnOnes','staffMeetings','training','gmRequests'].includes(view)&&manage(view)}
  {workspace!=='employee'&&view==='accounts'&&<AccountsHub data={data} act={act} busy={busy} reload={load} preview={preview} shlControls={manage('accounts')}/>}
- {workspace!=='employee'&&view==='settings'&&<SettingsPage data={data} week={week} preview={preview} reload={load} onPassword={()=>setPassword(true)} go={navigate} training={manage('trainingSettings')} system={<SchedulerAccounts data={data} act={act} busy={busy} reload={load} preview={preview} systemOnly/>}/>}
+ {view==='settings'&&<SettingsPage onPreviewAppearance={a=>{previewAppearances.current[data.self.id]=a;setData({...data,appearance:a,schedule_colors:appearanceColors(a)})}} data={data} week={week} preview={preview} reload={load} onPassword={()=>setPassword(true)} go={navigate} training={manage('trainingSettings')} system={<SchedulerAccounts data={data} act={act} busy={busy} reload={load} preview={preview} systemOnly/>}/>}
  {view==='help'&&<HelpCenter data={data} workspace={workspace} go={navigate}/>}
  {personId&&workspace!=='employee'&&!['directory','oneOnOnes','staffMeetings','training','gmRequests'].includes(view)&&manage('person')}
  <InstallApp/><footer>STARS Scheduling · {workspaceLabels[workspace]}<span>America/Chicago · {workspace==='employee'?'Published schedules':'Pilot · Confirm the official schedule with your manager'}</span></footer>

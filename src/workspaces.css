@@ -140,3 +140,14 @@ nav button .nav-page-indicator{margin-left:auto;flex-shrink:0;opacity:.85}
 .meeting-selected{list-style:none;padding:0;}
 .meeting-selected li span,.meeting-person-results span{overflow-wrap:anywhere;min-width:0;}
 .meeting-attendee-builder{margin:18px 0;}
+/* Shared schedule colors; labels also work without background printing. */
+.day-shift.draft-shift,.day-shift.published-shift,.schedule-staff-meeting{border-left:5px solid var(--shift-edge,#245c9c);background:var(--shift-background,#edf4fd);color:#292722;}
+.day-shift.draft-shift:hover{background:var(--shift-background,#edf4fd);outline:2px solid var(--shift-edge,#245c9c);outline-offset:1px;}
+.schedule-color-legend{padding:16px 20px 0;}.schedule-color-legend p{margin:8px 0;}
+.schedule-color-key{display:flex;flex-wrap:wrap;gap:10px 20px;list-style:none;padding:0;margin:12px 0;}.schedule-color-key li{display:flex;align-items:center;gap:8px;font-size:14px;}
+.schedule-color-swatch{display:inline-block;width:20px;height:20px;border:3px solid var(--shift-edge);background:var(--shift-background);border-radius:4px;flex-shrink:0;}
+.schedule-color-settings{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px;margin:20px 0;}.schedule-color-setting{min-width:0;}.schedule-color-setting label{display:grid;gap:8px;}
+.schedule-color-sample{display:flex;flex-direction:column;gap:6px;padding:14px;border-left:5px solid var(--shift-edge);background:var(--shift-background);color:#292722;border-radius:6px;margin:10px 0;}.schedule-color-setting small{display:block;}
+@media(max-width:600px){.schedule-color-settings{grid-template-columns:1fr;}.schedule-color-legend{padding:16px 12px 0;}}
+@media print{.schedule-color-legend details{display:none;}.day-shift,.schedule-staff-meeting{color:#000!important;break-inside:avoid;}.schedule-color-key{gap:5px 10px;}.schedule-color-key li{font-size:9px;}}
+.schedule-color-swatch{background:var(--shift-edge);border:1px solid var(--shift-edge);width:22px;height:22px;}

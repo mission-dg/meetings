@@ -1,0 +1,45 @@
+/* Account-scoped theme. Light retains STARS' warm tan/orange branding. */
+.appearance-preview{padding:18px;border:1px solid #c4b69f;border-radius:12px;margin:18px 0;}
+.appearance-preview.preview-light{background:#f7f3eb;color:#292722;}
+.appearance-preview.preview-dark{background:#302d29;color:#f5edde;}
+.preview-dark .schedule-color-sample{background:var(--shift-dark-background);border-color:var(--shift-dark-edge);color:#fff;}
+@media(prefers-color-scheme:dark){.preview-system{background:#302d29;color:#f5edde;}.preview-system .schedule-color-sample{background:var(--shift-dark-background);border-color:var(--shift-dark-edge);color:#fff;}}
+@media screen{
+:root[data-theme=dark]{color-scheme:dark;background:#292724;color:#f5edde;--green:#f2cc86;--muted:#c5b9a7;--line:#655e53;--text:#f5edde;}
+:root[data-theme=dark] body{background:#292724;color:#f5edde;}
+:root[data-theme=dark] :is(.shell,main,.content,.scheduler-shell){background:#292724;color:#f5edde;}
+:root[data-theme=dark] :is(.panel,.modal,.topbar,.schedule-day,.person-row,.training-progress-row,.home-metrics button,.more-grid button,.employee-navigation,.profile-tabs button,.directory-card,.help-card,.request-card,.request-section,.onboarding-card){background:#36322d;color:#f5edde;border-color:#655e53;}
+:root[data-theme=dark] :is(.shell>aside,.sidebar-bottom){background:#423a2e;color:#f5edde;border-color:#ed7a20;}
+:root[data-theme=dark] :is(h1,h2,h3,h4,h5,h6,label,strong,summary,.brand,.brand small,.workspace-heading,.workspace-heading small,.sidebar-identity,nav button,.person-link,.page-title,.text-button){color:inherit;}
+:root[data-theme=dark] :is(p,li,dt,dd,td,th){border-color:#655e53;}
+:root[data-theme=dark] :is(.muted,small,.schedule-day time,.day-empty,.install-app,footer,.panel-footer){color:#cfc2b0;}
+:root[data-theme=dark] :is(button,input,textarea,select){background:#413c35;color:#f5edde;border-color:#847967;}
+:root[data-theme=dark] :is(input,textarea)::placeholder{color:#c6bba9;}
+:root[data-theme=dark] button:hover{background:#514838;}
+:root[data-theme=dark] :is(button.primary,nav button.active,.profile-tabs button[aria-current=page],.employee-navigation button.active){background:#ed7a20;border-color:#ed7a20;color:#251f18;}
+:root[data-theme=dark] :is(.notice,.warning,.pilot-notice,.meeting-due){background:#4d4029;color:#ffe4ac;border-color:#a4864e;}
+:root[data-theme=dark] :is(.error,.ot-flag){background:#542e2c;color:#ffd8d1;border-color:#bd756b;}
+:root[data-theme=dark] .success{background:#294b3c;color:#cdf1dd;}
+:root[data-theme=dark] :is(.meal-section h4,.weekday,.filters,.table-header,.schedule-state,.calendar-toolbar,.preview-banner){background:#454035;color:#f5edde;}
+:root[data-theme=dark] :is(.schedule-controls,.schedule-day>header,.hours-breakdown,.weekly-hours,.calendar-day,.brief-row,.qualification-row){border-color:#655e53;}
+:root[data-theme=dark] :is(.day-shift.draft-shift,.day-shift.published-shift,.schedule-staff-meeting,.schedule-color-sample){background:var(--shift-dark-background,#245c9c);border-left-color:var(--shift-dark-edge,#edf4fd);color:#fff;}
+:root[data-theme=dark] .schedule-color-swatch{background:var(--shift-dark-background);border-color:var(--shift-dark-edge);}
+:root[data-theme=dark] .appearance-preview.preview-light{background:#f7f3eb;color:#292722;}
+:root[data-theme=dark] .preview-light .schedule-color-sample{background:var(--shift-background);border-color:var(--shift-edge);color:#292722;}
+:root[data-theme=dark] :is(.chip,.training-hours-tag,.meeting-shift-note){color:#292722;}
+:root[data-theme=dark] :is(a,.eyebrow){color:#f1bd70;}
+:root[data-theme=dark] :is(.next-shift,.ca-tools,.system-heading){background:#423a2e;color:#f5edde;}
+}
+@media screen{
+:root[data-theme=dark] .create-menu summary{color:#251f18;}
+:root[data-theme=dark] .onboarding-offer{background:#4d4029;color:#ffe4ac;border-color:#a4864e;}
+:root[data-theme=dark] small{color:inherit;}
+:root[data-theme=dark] :is(.create-menu>div,.account-menu>div,.shift-availability,.picker-option.chosen,.focus-panel,.import-table th,.week-board th,.week-board thead th,.availability-summary>div,.availability-summary span,.notification.unread,.calendar-day.outside,.current-day){background:#443e34;color:#f5edde;border-color:#847967;}
+:root[data-theme=dark] :is(.attention-booked,.attention-overdue,.attention-unbooked,.meeting-status-scheduled){background:#3e3932;color:#f5edde;}
+:root[data-theme=dark] :is(.stat.yellow,.stat.orange,.stat.purple){background:#4d4029;color:#ffe4ac;}
+:root[data-theme=dark] .shell main .profile-tabs button{background:#413c35;color:#f5edde;border-color:#847967;}
+:root[data-theme=dark] .shell main .profile-tabs button[aria-current=page]{background:#ed7a20;color:#251f18;border-color:#ed7a20;}
+:root[data-theme=dark] .day-shift .person-link{background:transparent;color:#fff;}
+:root[data-theme=dark] .shell aside nav button.selected,:root[data-theme=dark] .employee-navigation button.selected{background:#ed7a20;color:#251f18;}
+}
+@media screen{:root[data-theme=dark] .schedule-color-swatch{background:var(--shift-dark-edge);border:1px solid var(--shift-dark-edge);}}
