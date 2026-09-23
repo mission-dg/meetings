@@ -59,3 +59,9 @@
 }
 :root[data-theme] .appearance-job-preview select{background:var(--preview-input);color:var(--preview-text);border-color:var(--preview-border);}
 .appearance-job-preview :is(label,small){color:inherit;}
+
+/* Keep overview metric labels and icons readable on dark cards, including hover. */
+@media screen{
+:root[data-theme=dark] .home-metrics>button :is(span,strong){color:#f5edde;}
+:root[data-theme=dark] .home-metrics>button svg{color:#f2cc86;}
+}
