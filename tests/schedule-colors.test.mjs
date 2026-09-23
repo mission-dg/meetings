@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile,readdir} from 'node:fs/promises';
 import {fixture,uid,sid} from './scheduler-fixture.mjs';
-import {colorPresets,defaultAppearance,appearanceColors,shiftColorKey,colorEntries,styledPreset} from '../src/scheduleColors.ts';
+import {colorPresets,defaultAppearance,appearanceColors,shiftColorKey,colorEntries,styledPreset,presetGroups,presetLuminance} from '../src/scheduleColors.ts';
 async function setup(){const f=await fixture();const files=await readdir(new URL('../supabase/migrations/',import.meta.url));try{for(let n=29;n<=37;n++){const file=files.find(x=>x.startsWith(String(n).padStart(3,'0')+'_'));await f.db.exec(await readFile(new URL('../supabase/migrations/'+file,import.meta.url),'utf8'));}return f}catch(e){await f.db.close();throw e}}
 const luminance=hex=>{const c=hex.slice(1).match(/../g).map(x=>parseInt(x,16)/255).map(x=>x<=.04045?x/12.92:((x+.055)/1.055)**2.4);return c[0]*.2126+c[1]*.7152+c[2]*.0722};
 const contrast=(a,b)=>(Math.max(luminance(a),luminance(b))+.05)/(Math.min(luminance(a),luminance(b))+.05);
@@ -32,3 +32,5 @@ test('staff meeting links annotate only visible generated training shifts and ne
  await f.db.query("update private.schedule_revisions set state='Published' where id=$1",[draft.id]);await f.db.query('update private.schedule_weeks set published_id=$1,draft_id=null where week_start=$2',[draft.id,'2030-09-01']);
  const employee=await workspace(4,'employee');assert.equal(employee.schedule_meeting_shifts[shift.id],sid(900));assert.ok(!JSON.stringify(employee.schedule_meeting_shifts).includes('Private title'));
  }finally{await f.db.close()}});
+
+test('picker groups hues and orders light to dark without changing saved preset identities',()=>{const shown=presetGroups.flatMap(g=>g.presets);assert.equal(shown.length,colorPresets.length);assert.equal(new Set(shown.map(p=>p.id)).size,colorPresets.length);assert.equal(presetGroups[0].label,'Reds & pinks');assert.equal(presetGroups[1].label,'Blues');for(const group of presetGroups)for(let i=1;i<group.presets.length;i++)assert.ok(presetLuminance(group.presets[i-1].edge)>=presetLuminance(group.presets[i].edge));});
