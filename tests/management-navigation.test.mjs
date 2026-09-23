@@ -5,7 +5,8 @@ import {guides} from '../src/helpGuides.ts';
 import {leadershipPerson} from '../src/accountGroups.ts';
 test('IT includes every manager destination without switching and preserves employee boundary',()=>{
  for(const [page] of workspacePages.manager)assert.ok(allowedPage('it',page),page);
- for(const page of ['settings','accounts','audit','oneOnOnes','gmRequests'])assert.equal(allowedPage('employee',page),false);
+ for(const page of ['accounts','audit','oneOnOnes','gmRequests'])assert.equal(allowedPage('employee',page),false);
+ assert.equal(allowedPage('employee','settings'),true);
  assert.equal(chooseWorkspace({views:['it','manager','employee']},'manager'),'it');
  assert.equal(chooseWorkspace({views:['it','manager','employee']},'employee'),'employee');
  assert.equal(canonicalPage('administration'),'accounts');assert.equal(canonicalPage('meetings'),'oneOnOnes');assert.equal(canonicalPage('staff'),'directory');
