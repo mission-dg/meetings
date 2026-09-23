@@ -52,7 +52,7 @@ export function TourCoach({step,page,workspace,title,index,total,onBack,onContin
  <aside ref={card} tabIndex={-1} className={'tour-coach '+(box&&box.top>window.innerHeight/2?'coach-top':'')} role="region" aria-label={title+' walkthrough'}>
  <button className="tour-coach-close" aria-label="Exit walkthrough" onClick={onExit}>×</button>
  <p className="muted">{title} · Step {index+1} of {total}</p><h2>{step.title}</h2>
- <p aria-live="polite">{target?.instruction||'This area is not available right now. You can skip this step or exit and return from Help.'}</p>
+ <p aria-live="polite">{target?.instruction||'This area is not available right now. You can skip this step or exit and return from Settings → My account.'}</p>
  {!navigation&&<p>{step.text}</p>}
  <p className="muted">Use the normal controls. The guide does not save or publish for you.</p>
  <div className="actions"><button disabled={index===0} onClick={onBack}>Back</button><button onClick={onExit}>Exit tour</button>{!target?<button onClick={onContinue}>Skip unavailable step</button>:!navigation&&!step.clickToAdvance?<button className="primary" onClick={onContinue}>{index===total-1?'Finish':'Continue'}</button>:<button onClick={()=>target.element.focus()}>Focus highlighted control</button>}</div>
