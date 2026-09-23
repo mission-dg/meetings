@@ -43,3 +43,19 @@
 :root[data-theme=dark] .shell aside nav button.selected,:root[data-theme=dark] .employee-navigation button.selected{background:#ed7a20;color:#251f18;}
 }
 @media screen{:root[data-theme=dark] .schedule-color-swatch{background:var(--shift-dark-edge);border:1px solid var(--shift-dark-edge);}}
+
+/* Both preview areas follow the pending theme, not the saved page theme. */
+.appearance-job-preview{padding:18px;border-radius:12px;}
+:is(.appearance-preview,.appearance-job-preview){--preview-bg:#f7f3eb;--preview-text:#292722;--preview-input:#fff;--preview-border:#b9ad9a;--preview-card-text:#292722;}
+:is(.appearance-preview,.appearance-job-preview).preview-dark{--preview-bg:#302d29;--preview-text:#f5edde;--preview-input:#413c35;--preview-border:#847967;--preview-card-text:#fff;}
+@media(prefers-color-scheme:dark){
+:is(.appearance-preview,.appearance-job-preview).preview-system{--preview-bg:#302d29;--preview-text:#f5edde;--preview-input:#413c35;--preview-border:#847967;--preview-card-text:#fff;}
+}
+:root[data-theme] :is(.appearance-preview,.appearance-job-preview){background:var(--preview-bg);color:var(--preview-text);}
+:root[data-theme] :is(.appearance-preview,.appearance-job-preview) .schedule-color-sample{background:var(--shift-background);border-color:var(--shift-edge);color:var(--preview-card-text);}
+:root[data-theme] :is(.appearance-preview,.appearance-job-preview).preview-dark .schedule-color-sample{background:var(--shift-dark-background);border-color:var(--shift-dark-edge);}
+@media(prefers-color-scheme:dark){
+:root[data-theme] :is(.appearance-preview,.appearance-job-preview).preview-system .schedule-color-sample{background:var(--shift-dark-background);border-color:var(--shift-dark-edge);}
+}
+:root[data-theme] .appearance-job-preview select{background:var(--preview-input);color:var(--preview-text);border-color:var(--preview-border);}
+.appearance-job-preview :is(label,small){color:inherit;}
