@@ -21,3 +21,13 @@ export function appearanceColors(a:Appearance):ScheduleColors{return {version:a.
 const darkAccents=['#69b6ff','#8ed67d','#c895ff','#ffac70','#56d9dc','#ff82b0','#909aff','#d6df6c','#eac18b','#ff65de','#acb7c5','#53e5ae','#ff7d82','#50d6ff','#d7acd7','#ffde55','#91ccba','#e4b4a0','#b5c0ff','#bdd99b','#efa8d4','#9dc8e8','#efad90','#c5ade9'];
 function mix(a:string,b:string,n:number){return '#'+[1,3,5].map(i=>Math.round(parseInt(a.slice(i,i+2),16)*(1-n)+parseInt(b.slice(i,i+2),16)*n).toString(16).padStart(2,'0')).join('');}
 export function styledPreset(p:typeof colorPresets[number],palette:string){const accent=darkAccents[colorPresets.findIndex(x=>x.id===p.id)]||darkAccents[0];return {...p,edge:palette==='vivid'?mix(p.edge,'#000000',.12):p.edge,background:palette==='soft'?mix(p.background,'#ffffff',.55):palette==='vivid'?mix(p.background,p.edge,.10):p.background,darkEdge:palette==='soft'?mix(accent,'#ffffff',.20):accent,darkBackground:mix(p.edge,'#242424',palette==='soft'?.65:palette==='vivid'?.3:.45)};}
+export function presetLuminance(hex:string){const c=[1,3,5].map(i=>parseInt(hex.slice(i,i+2),16)/255).map(n=>n<=.04045?n/12.92:((n+.055)/1.055)**2.4);return c[0]*.2126+c[1]*.7152+c[2]*.0722;}
+// Picker-only ordering: never reorder the stable preset catalog or saved IDs.
+export const presetGroups=[
+ {label:'Reds & pinks',ids:['rose','cranberry','magenta']},
+ {label:'Blues',ids:['ocean','azure','slate','periwinkle','denim','indigo']},
+ {label:'Greens & teals',ids:['forest','teal','jade','pine','moss']},
+ {label:'Golds & yellows',ids:['olive','ochre']},
+ {label:'Oranges & browns',ids:['rust','copper','clay','cinnamon']},
+ {label:'Purples',ids:['violet','berry','plum','grape']}
+].map(g=>({label:g.label,presets:g.ids.map(id=>colorPresets.find(p=>p.id===id)!).sort((a,b)=>presetLuminance(b.edge)-presetLuminance(a.edge))}));
