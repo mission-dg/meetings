@@ -1,3 +1,4 @@
+import {useCreateIntent} from './workflowActions';
 import {PersonProfile,openPerson} from './PersonProfile';
 import {DirectoryCsv} from './DirectoryCsv';
 import {EmployeeImport} from './EmployeeImport';
@@ -44,6 +45,7 @@ export function ManagementPages({onScheduler,authors,page,onReload,scheduler,act
  function closeDialog(){if(busy)return;if(formSnapshot()===initialForm.current||confirm('Discard unsaved changes?'))setDialog(null)}
  const userId=preview?'demo':session?.user.id;
  const me=data.profiles.find(p=>p.id===userId&&p.active);
+ useCreateIntent('employee',()=>setDialog({kind:'staff'}),!!me?.is_admin);
  const canManageIT=!!me&&(me.is_admin||me.is_gm);
  const person=(id:string)=>data.staff.find(p=>p.id===id);
  const name=(id:string)=>{const p=person(id);return p?`${p.first_name} ${p.last_name}`:'Unknown employee'};

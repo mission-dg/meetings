@@ -86,3 +86,56 @@ nav button .nav-page-indicator{margin-left:auto;flex-shrink:0;opacity:.85}
  .scheduler-shell.menu-open:not(.workspace-employee)>aside {max-height:calc(100dvh - 70px);}
  .scheduler-shell.menu-open aside .sidebar-bottom {display:block;margin-top:12px;}
 }
+/* Task-focused manager workflows and onboarding */
+.create-menu {position:relative;}
+.create-menu summary {cursor:pointer;padding:10px 16px;background:var(--brand-orange,#e87722);color:#282521;border-radius:8px;font-weight:700;}
+.create-menu>div {position:absolute;right:0;top:100%;z-index:70;min-width:240px;background:white;border:1px solid #c8bda9;box-shadow:0 8px 20px #0002;padding:10px;display:grid;gap:5px;}
+.person-picker {border:1px solid #d8d0c2;border-radius:10px;padding:12px;min-width:0;margin:14px 0;}
+.person-picker legend {font-weight:700;}
+.picker-options {max-height:230px;overflow-y:auto;display:grid;gap:5px;}
+.picker-option {display:flex!important;align-items:flex-start;gap:10px!important;padding:10px;margin:0!important;border:1px solid transparent;border-radius:7px;}
+.picker-option input {width:auto!important;margin-top:5px;}
+.picker-option small {display:block;font-weight:400;line-height:1.5;}
+.picker-option.chosen {border-color:#a74c0b;background:#fff4e4;}
+.shift-presets {padding:12px;border:1px solid #d8d0c2;border-radius:8px;margin-bottom:14px;}
+.shift-presets summary,.schedule-guide summary {cursor:pointer;min-height:44px;}
+.schedule-guide ol {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;padding-left:24px;}
+.schedule-guide li {padding:10px;}
+.onboarding-offer {display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:18px;background:#fff3d6;border:1px solid #bd9d56;border-radius:10px;margin-bottom:18px;}
+.tour-highlight {outline:4px solid #bd6a12;outline-offset:4px;}
+.walkthrough-overlay .overlay {background:#00000018;align-items:flex-end;justify-content:flex-end;pointer-events:auto;}
+.walkthrough-overlay .modal {width:min(480px,95vw);max-height:48dvh;margin:14px;box-shadow:0 8px 32px #0003;}
+.practice-banner {background:#fff3d6;color:#3e3116;border:2px solid #bd9d56;padding:14px;font-weight:700;position:sticky;top:0;z-index:1;}
+.practice-workspace .actions {margin:15px 0;}
+@media(max-width:720px){.schedule-guide ol{grid-template-columns:1fr}.walkthrough-overlay .modal{width:100%;margin:0;border-radius:14px 14px 0 0;max-height:50dvh}.create-menu>div{right:0;max-width:90vw}.onboarding-offer{display:block}.onboarding-offer>*{margin:5px}}
+@media(prefers-reduced-motion:reduce){.tour-highlight{scroll-behavior:auto;transition:none}}
+
+.sidebar-identity{margin:0 0 .75rem;font-weight:600;overflow-wrap:anywhere;}
+
+.daily-staffing-print{display:none;}
+@media print{
+ body:has(> .daily-staffing-print)>:not(.daily-staffing-print){display:none!important;}
+ body>.daily-staffing-print{display:block!important;color:#000;background:#fff;font-family:Arial,sans-serif;padding:12pt;}
+ .daily-staffing-print h1{font:700 20pt Arial,sans-serif;margin:0 0 8pt;}
+ .daily-staffing-print h2{font:700 14pt Arial,sans-serif;margin:0 0 6pt;}
+ .daily-staffing-print p{font-size:10pt;margin:0 0 14pt;}
+ .daily-staffing-print table{width:100%;border-collapse:collapse;font-size:11pt;}
+ .daily-staffing-print thead{display:table-header-group;}
+ .daily-staffing-print th,.daily-staffing-print td{text-align:left;padding:9pt 6pt;border-bottom:1px solid #aaa;vertical-align:top;}
+ .daily-staffing-print tr{break-inside:avoid;}
+ .daily-staffing-print th:last-child,.daily-staffing-print td:last-child{white-space:nowrap;}
+}
+
+.request-section{border-top:1px solid var(--border,#e5ddd0);padding:0 20px;}
+.request-section>summary{padding:18px 0;cursor:pointer;font-weight:700;min-height:44px;}
+.request-section>summary span{font-weight:400;}
+.request-section .request-card{padding-left:0;padding-right:0;}
+
+.schedule-staff-meeting{display:flex;flex-direction:column;gap:5px;padding:12px;margin:10px 0;border:2px solid #896623;border-radius:10px;background:#fff4d8;color:#352d1c;overflow-wrap:anywhere;}
+@media print{.schedule-staff-meeting{break-inside:avoid;font-size:9px;padding:5px;}}
+
+.meeting-person-results{max-height:220px;overflow-y:auto;border:1px solid #ddd;padding:12px;border-radius:8px;}
+.meeting-person-results .actions,.meeting-selected li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:6px 0;}
+.meeting-selected{list-style:none;padding:0;}
+.meeting-selected li span,.meeting-person-results span{overflow-wrap:anywhere;min-width:0;}
+.meeting-attendee-builder{margin:18px 0;}

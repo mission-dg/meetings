@@ -1,18 +1,18 @@
 import type {Workspace,WorkspaceSession,SchedulerData} from './scheduler.ts';
 export const workspaceLabels:Record<Workspace,string>={employee:'Employee View',manager:'Manager View',it:'IT View'};
 export const managementGroups:[string,[string,string][]][]=[
- ['Daily work',[['home','Overview'],['schedule','Schedule'],['requests','Approvals'],['availability','Team availability']]],
+ ['Daily work',[['home','Overview'],['schedule','Schedule'],['requests','Requests & availability']]],
  ['People',[['directory','Staff directory'],['training','Training'],['staffMeetings','Staff meetings'],['oneOnOnes','1:1s']]],
  ['Operations',[['announcements','Announcements'],['logbook','Manager logbook'],['documents','Documents'],['reports','Reports'],['labor','Labor planning']]],
  ['Administration',[['accounts','Accounts & access'],['audit','Change history'],['settings','Settings']]],
  ['', [['help','Help']]]
 ];
 export const workspacePages:Record<Workspace,[string,string][]>= {
- employee:[['home','Today'],['schedule','Schedule'],['requests','Requests'],['announcements','Updates'],['more','More']],
+ employee:[['home','Today'],['schedule','Schedule'],['requests','Requests & availability'],['announcements','Updates'],['more','More']],
  manager:managementGroups.flatMap(([,pages])=>pages),it:managementGroups.flatMap(([,pages])=>pages)
 };
-export function canonicalPage(page:string){return ({meetings:'oneOnOnes',administration:'accounts',staff:'directory',trainingProgress:'training',admin:'accounts'} as Record<string,string>)[page]||page}
-export const employeeMore:[string,string][]=[['staffMeetings','Staff meetings'],['availability','My availability'],['training','Training'],['directory','Team directory'],['documents','Documents'],['profile','My profile & calendar'],['help','Help']];
+export function canonicalPage(page:string){return ({availability:'requests',meetings:'oneOnOnes',administration:'accounts',staff:'directory',trainingProgress:'training',admin:'accounts'} as Record<string,string>)[page]||page}
+export const employeeMore:[string,string][]=[['staffMeetings','Staff meetings'],['training','Training'],['directory','Team directory'],['documents','Documents'],['profile','My profile & calendar'],['help','Help']];
 export function allowedPage(workspace:Workspace,page:string){return (workspace!=='employee'&&page==='gmRequests')||[...workspacePages[workspace],...(workspace==='employee'?employeeMore:[])].some(([id])=>id===page)}
 export function chooseWorkspace(session:WorkspaceSession,preferred:string|null):Workspace{if(preferred==='manager'&&session.views.includes('it'))return 'it';return session.views.includes(preferred as Workspace)?preferred as Workspace:session.views[0]}
 // Used only by the disconnected demo. Production uses the server's matching projection.
