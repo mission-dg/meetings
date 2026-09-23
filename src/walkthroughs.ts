@@ -1,9 +1,29 @@
 import type {SchedulerData,Workspace} from './scheduler';
-export type TourStep={title:string;text:string;page:string;target:string};
+export type TourStep={title:string;text:string;managementText?:string;page:string;target:string;clickToAdvance?:boolean};
 export type Chapter={id:string;title:string;steps:TourStep[]};
 export const chapters:Chapter[]=[
+ {id:'build_week',title:'Build and release a week',steps:[
+ {title:'Choose the week',text:'Open Schedule and use Previous week or Next week. Employees continue to see the published schedule while you work privately.',page:'schedule',target:'page-content'},
+ {title:'Start with selected shifts',text:'Choose Copy previous week, select an earlier Sunday and tick the work shifts you want. Meeting and training blocks are excluded; replan those for the new dates.',page:'schedule',target:'release-actions'},
+ {title:'Coverage and changes',text:'Add or edit shifts. Find coverage checks qualifications, availability and projected hours. Bulk edit lets you review several time changes or reassignments before saving.',page:'schedule',target:'release-actions'},
+ {title:'Check the week',text:'Review staffing targets, missing configuration, qualification reminders and conflicts. Unknown coverage is not a passed check.',page:'schedule',target:'schedule-guide'},
+ {title:'Review and publish',text:'Review & release shows added, removed and changed assignments, including before and after details. Resolve issues and acknowledge required hours or coverage warnings before releasing.',page:'schedule',target:'release-actions'}]},
+ {id:'approve_requests',title:'Approve requests and availability',steps:[
+ {title:'Find pending decisions',text:'Open a specific request from the Manager action list. Your own requests require another authorized manager.',page:'home',target:'manager-actions'},
+ {title:'Review the request type',text:'A one-off absence affects its dates. Recurring availability changes the accepted time slots from its effective date. Pending changes do not replace approved availability.',page:'requests',target:'page-content'},
+ {title:'Decide explicitly',text:'Check conflicts and coverage, then approve or deny with the required explanation. A failed save keeps your entries; a stale request must be refreshed before another decision.',page:'requests',target:'page-content'}]},
+ {id:'staff_meeting_tasks',title:'Schedule a staff meeting and record attendance',steps:[
+ {title:'Build the attendee list',text:'Choose Schedule staff meeting. Add one or more job groups, individual people, or both. Each person appears once in the list.',page:'staffMeetings',target:'page-content'},
+ {title:'Choose timing',text:'Separate blocks add Training time. During existing work shifts requires a covering shift for everyone and splits that interval into Training. Resolve conflicts before saving.',page:'staffMeetings',target:'page-content'},
+ {title:'Release to schedules',text:'The meeting is private until its week is reviewed and released. Open schedule from the meeting and review the affected assignments.',page:'staffMeetings',target:'page-content'},
+ {title:'Record attendance',text:'After a published meeting ends, its creator can record Attended, Absent or Canceled for each person. This does not complete training or reset 1:1 reminders.',page:'staffMeetings',target:'page-content'}]},
+ {id:'training_tasks',title:'Schedule and complete job training',steps:[
+ {title:'Find the employee and job',text:'Use Training to choose the person and job. Qualifications inherited through GM or sSHL are already satisfied; actual learning history remains intact.',page:'training',target:'page-content'},
+ {title:'Schedule coaching',text:'Choose trainee and eligible trainer work shifts covering the whole training interval. Add draft training in Schedule when those shifts are still private.',page:'training',target:'page-content'},
+ {title:'Record actual completion',text:'Use the existing creator-authorized completion control after training occurs. Scheduled sessions and attendance at staff meetings do not count as completed position training.',page:'training',target:'page-content'},
+ {title:'Confirm readiness',text:'Review completed shifts and history before an authorized sign-off. Reaching a target does not automatically grant a qualification.',page:'training',target:'page-content'}]},
  {id:'employee',title:'Employee essentials',steps:[
- {title:'Your next shift',text:'Start here to see your next published assignment. Private drafts do not appear in Employee View.',page:'home',target:'page-content'},
+ {title:'Your next shift',text:'Start here to see your next published assignment.',managementText:'Private drafts do not appear in Employee View.',page:'home',target:'view-my-schedule',clickToAdvance:true},
  {title:'Your schedule',text:'Open an upcoming card to see work, training and 1:1 details. Eligible cards offer Trade shift, Ask coworker to cover and Offer shift. A coworker must accept before a manager approves.',page:'schedule',target:'page-content'},
  {title:'Requests and availability',text:'Use Requests for time off and shift changes. Existing approved restrictions remain until a replacement is approved. Never assume a submitted request is already approved.',page:'requests',target:'page-content'},
  {title:'Training and meetings',text:'More contains training, staff meetings, and your profile and calendar. Your own meeting details remain private.',page:'more',target:'employee-navigation'},
@@ -24,4 +44,4 @@ export const chapters:Chapter[]=[
  {title:'Help and account practice',text:'Try creating a fictional teammate and simulated account in practice. No credentials or notifications are generated.',page:'help',target:'help-center'}]},
  {id:'ca',title:'Community Ambassador tools',steps:[{title:'Your authorized tools',text:'Your CA tools provide the training and announcement actions allowed by your account. They do not automatically grant scheduling management.',page:'home',target:'page-content'},{title:'Training prerequisites',text:'Position training requires eligible trainee and trainer work shifts and the correct job. Dedicated Training blocks do not automatically grant a qualification.',page:'training',target:'page-content'},{title:'Team announcements',text:'Review the audience and message before publishing. This walkthrough never submits a message.',page:'announcements',target:'page-content'}]}
 ];
-export function availableChapters(data:SchedulerData,workspace:Workspace){return chapters.filter(c=>workspace==='employee'?c.id==='employee'||c.id==='ca'&&data.self.is_ca:c.id==='manager'&&data.self.is_manager||c.id==='it'&&data.self.is_admin)}
+export function availableChapters(data:SchedulerData,workspace:Workspace){const canManage=data.available_views?.some(view=>view==='it'||view==='manager')??(data.self.is_admin||data.self.is_manager);return chapters.filter(c=>workspace==='employee'?c.id==='employee'||c.id==='ca'&&data.self.is_ca:['manager','build_week','approve_requests','staff_meeting_tasks','training_tasks'].includes(c.id)&&data.self.is_manager||c.id==='it'&&data.self.is_admin).map(chapter=>({...chapter,steps:chapter.steps.map(step=>({...step,text:step.text+(canManage&&step.managementText?' '+step.managementText:'')}))}))}

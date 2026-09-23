@@ -1,0 +1,2 @@
+import {useEffect,useState} from 'react';
+export function SaveFeedback({busy}:{busy:boolean}){const [dirty,setDirty]=useState(false);useEffect(()=>{const update=(e:Event)=>setDirty((e as CustomEvent<boolean>).detail);window.addEventListener('stars:dirty',update);return()=>window.removeEventListener('stars:dirty',update)},[]);return <span className="workflow-save-status" role="status" aria-live="polite">{busy?'Saving…':dirty?'Unsaved changes':''}</span>}
