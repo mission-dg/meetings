@@ -34,3 +34,11 @@ test('directory badges show unstarted, scheduled, completed and revoked qualific
  assert.deepEqual(trainingBadge('A',job,[{...session,status:'Cancelled'}],[{...signed,active:false}]),{color:'red',text:'GSR: 0/4 Shifts'});
  assert.deepEqual(trainingBadge('B',job,[session],[signed]),{color:'red',text:'GSR: 0/4 Shifts'});
 });
+
+test('inherited leadership qualifications suppress remaining training without inventing completed shifts',()=>{
+ const job={id:'gsr',name:'GSR',target_shifts:4,active:true};
+ const signoff={id:'inherited:a:gsr',staff_id:'A',training_position_id:'gsr',active:true,origin:'leadership',inherited_source:'sSHL',version:0};
+ assert.equal(trainingProgress('A',job,[],[signoff]).completed,0);
+ assert.equal(trainingProgress('A',job,[],[signoff]).remaining,0);
+ assert.deepEqual(trainingBadge('A',job,[],[signoff]),{color:'teal',text:'GSR: Qualified through sSHL'});
+});
